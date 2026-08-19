@@ -1,0 +1,281 @@
+/* Se o projeto não tiver a fonte instalada localmente, importe-a
+   (ex.: via Google Fonts) antes desta folha de estilo:
+   @import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,700;0,900;1,400&display=swap');
+*/
+
+:root {
+  --color-bg: #141414;
+  --color-red: #921013;
+  --color-red-hover: #b20000;
+  --color-white: #ffffff;
+  --color-gray-text: #d9d9d9;
+  --color-input-bg: #3a3a3a;
+  --color-input-placeholder: #c9c9c9;
+
+  --font-base: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+
+  /* dimensões exatas do protótipo */
+  --input-width: 672px;
+  --input-height: 66px;
+  --button-width: 238px;
+  --button-height: 66px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ---------- Frame principal (1920 x 1080) ---------- */
+
+.login-page {
+  position: relative;
+  width: 100%;
+  max-width: 1920px;
+  aspect-ratio: 1920 / 1080;
+  margin: 0 auto;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  font-family: var(--font-base);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Camada de fundo: substitua por img-game-catalog (mosaico de capas de jogos). Aqui é usado um padrão neutro para não reproduzir capas com direitos autorais. */
+.login-page__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: #1a1a1a;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.035) 0px,
+      rgba(255, 255, 255, 0.035) 1px,
+      transparent 1px,
+      transparent 160px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.035) 0px,
+      rgba(255, 255, 255, 0.035) 1px,
+      transparent 1px,
+      transparent 160px
+    );
+}
+
+.login-page__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    100deg,
+    rgba(10, 10, 10, 0.5) 0%,
+    rgba(10, 10, 10, 0.72) 38%,
+    rgba(10, 10, 10, 0.88) 65%,
+    rgba(10, 10, 10, 0.93) 100%
+  );
+}
+
+/* ---------- Logo ---------- */
+
+.logo {
+  position: absolute;
+  top: 2.7vw;   /* ≈ 52px em 1920 */
+  left: 3.2vw;  /* ≈ 62px em 1920 */
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3vw;
+}
+
+.logo__game {
+  font-family: var(--font-base);
+  font-size: clamp(20px, 1.7vw, 34px);
+  font-style: italic;
+  font-weight: 900;
+  color: var(--color-white);
+  letter-spacing: 0.02em;
+}
+
+.logo__log {
+  font-family: var(--font-base);
+  font-size: clamp(9px, 0.7vw, 14px);
+  font-weight: 900;
+  color: var(--color-white);
+  background-color: var(--color-red);
+  padding: 0.2em 0.5em;
+  border-radius: 2px;
+  transform: translateY(1px);
+}
+
+/* ---------- Conteúdo ---------- */
+
+.content {
+  position: relative;
+  z-index: 2;
+  width: var(--input-width);
+  max-width: 88%;
+  margin-left: auto;
+  margin-right: 12.5vw; 
+}
+
+.titulo {
+  margin: 0 0 2.6vw;
+  font-family: var(--font-base);
+  font-weight: 900;
+  font-size: clamp(28px, 2.5vw, 48px);
+  color: var(--color-white);
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Formulário ---------- */
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35vw; 
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55vw;
+}
+
+.input-group__label {
+  font-family: var(--font-base);
+  font-weight: 700;
+  font-size: clamp(14px, 1vw, 19px);
+  color: var(--color-white);
+}
+
+.input-group__field {
+  width: 100%;
+  max-width: var(--input-width);
+  height: var(--input-height);
+  min-height: 40px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--color-input-bg);
+  color: var(--color-white);
+  font-family: var(--font-base);
+  font-size: clamp(14px, 0.95vw, 18px);
+}
+
+.input-group__field::placeholder {
+  color: var(--color-input-placeholder);
+  font-style: italic;
+}
+
+.input-group__field:focus {
+  outline: 3px solid var(--color-red);
+  outline-offset: 1px;
+}
+
+/* ---------- Botão de login (componente) ---------- */
+
+.botao-login {
+  width: var(--button-width);
+  height: var(--button-height);
+  min-height: 40px;
+  margin-top: 1.2vw; 
+  align-self: flex-end;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--color-red);
+  color: var(--color-white);
+  font-family: var(--font-base);
+  font-weight: 400;
+  font-size: clamp(14px, 1vw, 19px);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.botao-login:hover {
+  background-color: var(--color-red-hover);
+  font-weight: 700;
+}
+
+.botao-login:active {
+  transform: translateY(1px);
+}
+
+.botao-login:focus-visible {
+  outline: 3px solid var(--color-white);
+  outline-offset: 2px;
+}
+
+/* ---------- Link para a página de cadastro ---------- */
+
+.link-cadastro {
+  display: block;
+  margin-top: 1.25vw;
+  font-family: var(--font-base);
+  font-style: italic;
+  font-size: clamp(12px, 0.85vw, 16px);
+  color: var(--color-gray-text);
+  text-decoration: none;
+}
+
+.link-cadastro:hover {
+  color: var(--color-white);
+  text-decoration: underline;
+}
+
+/* ---------- Responsivo (mobile) ---------- */
+
+@media (max-width: 720px) {
+  .login-page {
+    aspect-ratio: auto;
+    min-height: 100vh;
+    padding: 32px 20px;
+    justify-content: flex-start;
+  }
+
+  .logo {
+    position: static;
+    margin-bottom: 40px;
+  }
+
+  .logo__game {
+    font-size: 22px;
+  }
+
+  .logo__log {
+    font-size: 10px;
+  }
+
+  .content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .titulo {
+    font-size: 30px;
+    margin-bottom: 28px;
+  }
+
+  .login-form {
+    gap: 20px;
+  }
+
+  .input-group__field {
+    height: 52px;
+    font-size: 15px;
+  }
+
+  .botao-login {
+    width: 100%;
+    height: 52px;
+    align-self: stretch;
+    margin-top: 12px;
+  }
+
+  .link-cadastro {
+    margin-top: 20px;
+  }
+}
