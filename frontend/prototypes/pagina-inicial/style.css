@@ -1,0 +1,137 @@
+.pgina-inicial {
+  background-color: #000000;
+  min-height: 1100px;
+  min-width: 1920px;
+  position: relative;
+  width: 100%;
+}
+
+.pgina-inicial .imagem-de-fundo {
+  height: 840px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 1920px;
+}
+
+.pgina-inicial .gradiente-preto {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  height: 988px;
+  left: 0;
+  position: absolute;
+  top: 112px;
+  width: 1920px;
+}
+
+.pgina-inicial .imagens {
+  display: flex;
+  gap: 48px;
+  height: 387px;
+  left: calc(50.00% - 860px);
+  position: absolute;
+  top: 546px;
+  width: 1720px;
+}
+
+.pgina-inicial .img {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 355px;
+  width: 542px;
+}
+
+.pgina-inicial .text-wrapper {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Public Sans-Regular", Helvetica;
+  font-size: 30px;
+  font-weight: 400;
+  height: 35px;
+  letter-spacing: 0;
+  line-height: normal;
+  white-space: nowrap;
+  width: 258px;
+}
+
+.pgina-inicial .img-2 {
+  aspect-ratio: 1.79;
+  height: 302px;
+  width: 540px;
+}
+
+.pgina-inicial .div {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Public Sans-Regular", Helvetica;
+  font-size: 30px;
+  font-weight: 400;
+  height: 35px;
+  letter-spacing: 0;
+  line-height: normal;
+  white-space: nowrap;
+  width: 332px;
+}
+
+.pgina-inicial .p {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Public Sans-Regular", Helvetica;
+  font-size: 30px;
+  font-weight: 400;
+  height: 35px;
+  letter-spacing: 0;
+  line-height: normal;
+  white-space: nowrap;
+  width: 404px;
+}
+
+.pgina-inicial .biblioteca-exemplo {
+  aspect-ratio: 1.79;
+  height: 302px;
+  object-fit: cover;
+  width: 540px;
+}
+
+.pgina-inicial .botoes-auth {
+  align-items: center;
+  display: flex;
+  gap: 32px;
+  left: 0;
+  padding: 0px 0px 0px 100px;
+  position: absolute;
+  top: 410px;
+  width: 1920px;
+}
+
+.pgina-inicial .BOTAO-AUTH-instance {
+  left: unset !important;
+  top: unset !important;
+}
+
+.pgina-inicial .logo {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  left: 0;
+  padding: 10px 100px;
+  position: absolute;
+  top: 112px;
+  width: 1920px;
+}
+
+.pgina-inicial .logo-gamelog-1 {
+  background-image: url(./image.png) !important;
+  height: 278px !important;
+  left: unset !important;
+  top: unset !important;
+  width: 751px !important;
+}
