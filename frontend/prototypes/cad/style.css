@@ -1,279 +1,210 @@
-:root {
-  --color-bg: #141414;
-  --color-bg-panel: #1c1c1c;
-  --color-red: #c81e2c;
-  --color-red-dark: #9e1420;
-  --color-white: #ffffff;
-  --color-gray-text: #d9d9d9;
-  --color-gray-muted: #a8a8a8;
-  --color-input-bg: #4b4b4b;
-  --color-input-placeholder: #c9c9c9;
-
-  --font-display: "Arial Black", "Helvetica Neue", Arial, sans-serif;
-  --font-body: "Helvetica Neue", Arial, sans-serif;
-
-  /* dimensões exatas do protótipo */
-  --input-width: 672px;
-  --input-height: 66px;
-  --button-width: 238px;
-  --button-height: 66px;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-/* ---------- Frame principal (1920 x 1080) ---------- */
-
-.cadastro-page {
+.cadastro-de-usu {
+  background-color: #000000;
+  min-height: 1080px;
+  min-width: 1920px;
   position: relative;
   width: 100%;
-  max-width: 1920px;
-  aspect-ratio: 1920 / 1080;
-  margin: 0 auto;
-  overflow: hidden;
-  background-color: var(--color-bg);
-  font-family: var(--font-body);
+}
+
+.cadastro-de-usu .img-game-catalog {
+  aspect-ratio: 1.78;
+  height: 1080px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 1920px;
+}
+
+.cadastro-de-usu .content {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  height: 807px;
+  left: 624px;
+  position: absolute;
+  top: 136px;
+  width: 676px;
 }
 
-/* Camada de fundo: substitua por img-game-catalog (mosaico de capas de jogos).
-   Aqui é usado um padrão neutro para não reproduzir capas com direitos autorais. */
-.cadastro-page__bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-color: #1a1a1a;
-  background-image:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.035) 0px,
-      rgba(255, 255, 255, 0.035) 1px,
-      transparent 1px,
-      transparent 160px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.035) 0px,
-      rgba(255, 255, 255, 0.035) 1px,
-      transparent 1px,
-      transparent 160px
-    );
-}
-
-.cadastro-page__overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    100deg,
-    rgba(10, 10, 10, 0.55) 0%,
-    rgba(10, 10, 10, 0.78) 38%,
-    rgba(10, 10, 10, 0.92) 65%,
-    rgba(10, 10, 10, 0.96) 100%
-  );
-}
-
-/* ---------- Logo (componente / losango) ---------- */
-
-.logo {
-  position: absolute;
-  top: 2.7vw;   /* ≈ 52px em 1920 */
-  left: 3.2vw;  /* ≈ 62px em 1920 */
-  z-index: 2;
-  display: inline-flex;
+.cadastro-de-usu .titulo {
   align-items: center;
-  gap: 0.3vw;
-}
-
-.logo__game {
-  font-family: var(--font-display);
-  font-size: clamp(20px, 1.7vw, 34px);
-  font-style: italic;
+  align-self: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Public Sans-Black", Helvetica;
+  font-size: 64px;
   font-weight: 900;
-  color: var(--color-white);
-  letter-spacing: 0.02em;
+  height: 75px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-left: -4px;
+  text-align: center;
+  white-space: nowrap;
+  width: 470px;
 }
 
-.logo__log {
-  font-family: var(--font-display);
-  font-size: clamp(9px, 0.7vw, 14px);
-  font-weight: 900;
-  color: var(--color-white);
-  background-color: var(--color-red);
-  padding: 0.2em 0.5em;
-  border-radius: 2px;
-  transform: translateY(1px);
+.cadastro-de-usu .input {
+  display: flex;
+  flex-direction: column;
+  height: 101px;
+  margin-top: 47px;
+  width: 674px;
 }
 
-/* ---------- Conteúdo (agrupamento) ---------- */
+.cadastro-de-usu .text-wrapper {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Public Sans-Medium", Helvetica;
+  font-size: 30px;
+  font-weight: 500;
+  height: 35px;
+  letter-spacing: 0;
+  line-height: normal;
+  width: 309.44px;
+}
 
-.content {
+.cadastro-de-usu .div-wrapper {
+  align-items: center;
+  background-color: #393939;
+  border: 1px solid;
+  border-color: #000000;
+  border-radius: 5px;
+  display: flex;
+  gap: 10px;
+  height: 66px;
+  padding: 10px;
   position: relative;
-  z-index: 2;
-  width: var(--input-width);
-  max-width: 88%;
-  margin-left: auto;
-  margin-right: 8.3vw; /* ≈ 160px de respiro até a borda direita em 1920 */
+  width: 672px;
 }
 
-.titulo {
-  margin: 0 0 2.6vw;
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: clamp(28px, 2.5vw, 48px);
-  color: var(--color-white);
-  letter-spacing: 0.01em;
-}
-
-/* ---------- Formulário ---------- */
-
-.cadastro-form {
+.cadastro-de-usu .div {
+  align-items: center;
+  color: #ffffff80;
   display: flex;
-  flex-direction: column;
-  gap: 1.35vw; /* ≈ 26px em 1920 */
+  font-family: "Public Sans-Italic", Helvetica;
+  font-size: 30px;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: normal;
+  position: relative;
+  white-space: nowrap;
+  width: fit-content;
 }
 
-.input-group {
+.cadastro-de-usu .input-2 {
+  height: 100px;
+  margin-top: 38px;
+  position: relative;
+  width: 674px;
+}
+
+.cadastro-de-usu .BOTAO-AUTH-2 {
+  align-items: center;
+  background-color: #393939;
+  border: 1px solid;
+  border-color: #000000;
+  border-radius: 5px;
   display: flex;
-  flex-direction: column;
-  gap: 0.55vw;
+  gap: 10px;
+  height: 66px;
+  left: 0;
+  padding: 10px;
+  position: absolute;
+  top: 34px;
+  width: 672px;
 }
 
-.input-group__label {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: clamp(14px, 1vw, 19px);
-  color: var(--color-white);
+.cadastro-de-usu .text-wrapper-2 {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Public Sans-Medium", Helvetica;
+  font-size: 30px;
+  font-weight: 500;
+  height: 35px;
+  left: 0;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  width: 328px;
 }
 
-.input-group__field {
-  width: 100%;
-  max-width: var(--input-width);
-  height: var(--input-height);
-  min-height: 40px;
-  padding: 0 20px;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--color-input-bg);
-  color: var(--color-white);
-  font-family: var(--font-body);
-  font-size: clamp(14px, 0.95vw, 18px);
+.cadastro-de-usu .text-wrapper-3 {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Public Sans-Medium", Helvetica;
+  font-size: 30px;
+  font-weight: 500;
+  height: 35px;
+  left: 0;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  width: 129px;
 }
 
-.input-group__field::placeholder {
-  color: var(--color-input-placeholder);
+.cadastro-de-usu .text-wrapper-4 {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Public Sans-Medium", Helvetica;
+  font-size: 30px;
+  font-weight: 500;
+  height: 35px;
+  left: 0;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  width: 127px;
+}
+
+.cadastro-de-usu .BOTAO-DE-CADASTRAR {
+  height: 66px !important;
+  left: unset !important;
+  margin-left: 434px !important;
+  margin-top: 38px !important;
+  top: unset !important;
+  width: 238px !important;
+}
+
+.cadastro-de-usu .BOTAO-AUTH-instance {
+  margin-bottom: unset !important;
+  margin-top: unset !important;
+}
+
+.cadastro-de-usu .link {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Public Sans-SemiBoldItalic", Helvetica;
+  font-size: 24px;
   font-style: italic;
+  font-weight: 600;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-left: 13px;
+  margin-top: 38px;
+  text-align: center;
+  white-space: nowrap;
+  width: 489px;
 }
 
-.input-group__field:focus {
-  outline: 3px solid var(--color-red);
-  outline-offset: 1px;
-}
-
-/* ---------- Botão de cadastrar (componente) ---------- */
-
-.botao-cadastrar {
-  width: var(--button-width);
-  height: var(--button-height);
-  min-height: 40px;
-  margin-top: 1.2vw; /* ≈ 23px em 1920 */
-  align-self: flex-end;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--color-red);
-  color: var(--color-white);
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: clamp(14px, 1vw, 19px);
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-}
-
-.botao-cadastrar:hover {
-  background-color: var(--color-red-dark);
-}
-
-.botao-cadastrar:active {
-  transform: translateY(1px);
-}
-
-.botao-cadastrar:focus-visible {
-  outline: 3px solid var(--color-white);
-  outline-offset: 2px;
-}
-
-/* ---------- Link de login ---------- */
-
-.link-login {
-  display: block;
-  margin-top: 1.25vw; /* ≈ 24px em 1920 */
-  font-family: var(--font-body);
-  font-style: italic;
-  font-size: clamp(12px, 0.85vw, 16px);
-  color: var(--color-gray-text);
-  text-decoration: none;
-}
-
-.link-login:hover {
-  color: var(--color-white);
-  text-decoration: underline;
-}
-
-/* ---------- Responsivo (mobile) ---------- */
-
-@media (max-width: 720px) {
-  .cadastro-page {
-    aspect-ratio: auto;
-    min-height: 100vh;
-    padding: 32px 20px;
-    justify-content: flex-start;
-  }
-
-  .logo {
-    position: static;
-    margin-bottom: 40px;
-  }
-
-  .logo__game {
-    font-size: 22px;
-  }
-
-  .logo__log {
-    font-size: 10px;
-  }
-
-  .content {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-  }
-
-  .titulo {
-    font-size: 30px;
-    margin-bottom: 28px;
-  }
-
-  .cadastro-form {
-    gap: 20px;
-  }
-
-  .input-group__field {
-    height: 52px;
-    font-size: 15px;
-  }
-
-  .botao-cadastrar {
-    width: 100%;
-    height: 52px;
-    align-self: stretch;
-    margin-top: 12px;
-  }
-
-  .link-login {
-    margin-top: 20px;
-  }
+.cadastro-de-usu .logo-instance {
+  aspect-ratio: unset !important;
+  background-image: url(./image.png) !important;
+  background-position: unset !important;
+  background-size: 100% 100% !important;
+  height: 74px !important;
+  left: 62px !important;
+  position: absolute !important;
+  top: 40px !important;
+  width: 218px !important;
 }
