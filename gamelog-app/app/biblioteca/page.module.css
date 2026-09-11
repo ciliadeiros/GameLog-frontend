@@ -1,56 +1,137 @@
-/* .pagina, .header, .titulo, .info, .erro, .grid, .card, .capa e
-   .cardTitulo agora vêm de ../styles/lista.module.css (compartilhado
-   com o Catálogo) */
+.pagina {
+  /* Mesmo esquema do catálogo e da página de detalhes: fundo claro só
+     pra essa página (ver comentário em catalogo/page.module.css). */
+  --color-bg: linear-gradient(180deg, #ededed 0%, #adacac 100%);
 
-.link {
-  color: var(--color-white);
-  text-decoration: underline;
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-bottom: 80px;
 }
 
-.cardConteudo {
-  padding: 16px;
+.conteudo {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 40px clamp(24px, 5vw, 70px) 0;
+}
+
+/* ---------- Sidebar de filtros ---------- */
+
+.sidebar {
+  flex: 0 0 280px;
+  background-color: #eeeeee;
+  border-radius: 5px;
+  box-shadow: 6px 6px 10px 0 rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  position: sticky;
+  top: 24px;
+}
+
+.sidebarTitulo {
+  background-color: var(--color-red);
+  color: #ffffff;
+  font-family: var(--font-base);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 25px;
+}
+
+.listaFiltros {
+  list-style: none;
+}
+
+.itemFiltro {
+  padding: 14px 25px;
+  border-top: 1px solid #c5c5c5;
+  color: var(--color-red);
+  font-family: var(--font-base);
+  font-size: 16px;
+  cursor: default;
+}
+
+/* quando isso virar funcional de verdade, troca .itemFiltro por
+   <button> e usa esse hover como indicativo de que é clicável */
+.itemFiltro:hover {
+  background-color: #e2e2e2;
+}
+
+/* ---------- Grade de jogos ---------- */
+
+.grade {
+  flex: 1;
+  min-width: 0;
+}
+
+.info,
+.erro {
+  font-family: var(--font-base);
+  font-size: 15px;
+}
+
+.info {
+  color: #4a4a4a;
+}
+
+.erro {
+  color: #b00000;
+}
+
+.link {
+  color: var(--color-red);
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 28px 24px;
+  align-items: start;
+}
+
+.card {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.label {
-  color: var(--color-gray-text);
-  font-family: var(--font-base);
-  font-size: 13px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.select {
-  background-color: var(--color-input-bg);
-  color: var(--color-white);
+.capaBotao {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
   border: none;
-  border-radius: 4px;
-  padding: 6px 8px;
-  font-family: var(--font-base);
-  font-size: 13px;
-}
-
-.detalhe {
-  color: var(--color-gray-text);
-  font-family: var(--font-base);
-  font-size: 13px;
-}
-
-.botaoRemover {
-  margin-top: 8px;
-  padding: 8px 12px;
-  border: 1px solid var(--color-red);
-  border-radius: 4px;
-  background-color: transparent;
-  color: var(--color-white);
-  font-family: var(--font-base);
-  font-size: 13px;
+  background: none;
   cursor: pointer;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.botaoRemover:hover {
-  background-color: var(--color-red);
+.capa {
+  display: block;
+  width: 100%;
+  aspect-ratio: 289 / 152;
+  object-fit: cover;
+  background-color: #2a2a2a;
+}
+
+.badge {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 5px 13px;
+  border-radius: 15px;
+  color: #ffffff;
+  font-family: var(--font-base);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.tituloCard {
+  color: #1a1a1a;
+  font-family: var(--font-base);
+  font-size: 15px;
+  font-weight: 500;
 }

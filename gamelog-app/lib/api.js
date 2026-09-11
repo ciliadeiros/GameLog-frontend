@@ -156,3 +156,11 @@ export function updateLibraryEntry(token, id, dados) {
 export function removeFromLibrary(token, id) {
   return request(`/library/${id}`, { method: "DELETE", token });
 }
+
+// GET /games/rawg/{id}/minha-biblioteca — diz se ESTE usuário já tem
+// esse jogo (da RAWG) na biblioteca dele, e devolve a entrada se tiver
+// (senão devolve null). Usada na página de detalhes pra decidir entre
+// mostrar "Adicionar à Biblioteca" ou o formulário de nota/review/horas.
+export function getMinhaEntradaBiblioteca(token, rawgId) {
+  return request(`/games/rawg/${rawgId}/minha-biblioteca`, { token });
+}

@@ -3,8 +3,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
+import { EntradaBibliotecaForm } from "@/components/EntradaBibliotecaForm";
 import { useAuth } from "@/context/AuthContext";
-import { addToLibrary, ApiError, getGameDetailsRawg, importarUmJogoRawg } from "@/lib/api";
+import {
+  addToLibrary,
+  ApiError,
+  getGameDetailsRawg,
+  getMinhaEntradaBiblioteca,
+  importarUmJogoRawg,
+} from "@/lib/api";
 import styles from "./page.module.css";
 
 // A RAWG não tem um campo pronto de "modo de jogo" — dá pra aproximar
@@ -37,16 +44,26 @@ function mensagemErro(err, fallback) {
 
 export default function DetalhesJogoPage() {
   const { id } = useParams();
-  const { token, user } = useAuth();
+  const { token, user, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  // Rota protegida: manda pro login se não tiver sessão (mesmo padrão
+  // já usado em app/biblioteca/page.jsx e app/catalogo/page.jsx).
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login");
+    }
+  }, [authLoading, user, router]);
 
   const [jogo, setJogo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ---------- Adicionar à biblioteca ----------
+  // ---------- Biblioteca (se o jogo já estiver, guarda a entrada aqui;
+  // se não estiver, fica null e mostramos o botão "Adicionar") ----------
+  const [entradaBiblioteca, setEntradaBiblioteca] = useState(null);
+  const [carregandoEntrada, setCarregandoEntrada] = useState(true);
   const [adicionando, setAdicionando] = useState(false);
-  const [naBiblioteca, setNaBiblioteca] = useState(false);
   const [erroBiblioteca, setErroBiblioteca] = useState(null);
 
   useEffect(() => {
@@ -59,6 +76,22 @@ export default function DetalhesJogoPage() {
       .catch((err) => setError(mensagemErro(err, "Não foi possível carregar esse jogo.")))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!id || !token) {
+      setCarregandoEntrada(false);
+      return;
+    }
+    setCarregandoEntrada(true);
+
+    getMinhaEntradaBiblioteca(token, id)
+      .then(setEntradaBiblioteca)
+      // se der erro aqui, não é grave o suficiente pra travar a página
+      // inteira — só assume que não está na biblioteca e mostra o
+      // botão de adicionar normalmente.
+      .catch(() => setEntradaBiblioteca(null))
+      .finally(() => setCarregandoEntrada(false));
+  }, [id, token]);
 
   async function handleAdicionar() {
     if (!user) {
@@ -73,11 +106,11 @@ export default function DetalhesJogoPage() {
       // 1) garante que o jogo exista em tb_jogos (importa se preciso)
       const jogoLocal = await importarUmJogoRawg(token, id);
       // 2) só então adiciona na biblioteca do usuário, com o id local
-      await addToLibrary(token, {
+      const novaEntrada = await addToLibrary(token, {
         bib_status: "planejado",
         bib_jgs_id: jogoLocal.jgs_id,
       });
-      setNaBiblioteca(true);
+      setEntradaBiblioteca(novaEntrada);
     } catch (err) {
       setErroBiblioteca(mensagemErro(err, "Não foi possível adicionar à biblioteca."));
     } finally {
@@ -94,6 +127,10 @@ export default function DetalhesJogoPage() {
     .map((t) => MODOS_POR_TAG[t.slug])
     .filter(Boolean)
     .filter((valor, i, arr) => arr.indexOf(valor) === i);
+
+  if (authLoading || !user) {
+    return null;
+  }
 
   return (
     <div className={styles.pagina}>
@@ -191,19 +228,30 @@ export default function DetalhesJogoPage() {
                 )}
 
                 <div className={styles.acao}>
-                  <button
-                    type="button"
-                    className={styles.botaoBiblioteca}
-                    onClick={handleAdicionar}
-                    disabled={adicionando || naBiblioteca}
-                  >
-                    {naBiblioteca
-                      ? "NA BIBLIOTECA ✓"
-                      : adicionando
-                      ? "ADICIONANDO..."
-                      : "ADICIONAR À BIBLIOTECA"}
-                  </button>
-                  {erroBiblioteca && <p className={styles.erroBiblioteca}>{erroBiblioteca}</p>}
+                  {carregandoEntrada ? (
+                    <p className={styles.info}>Verificando sua biblioteca...</p>
+                  ) : entradaBiblioteca ? (
+                    <EntradaBibliotecaForm
+                      token={token}
+                      entrada={entradaBiblioteca}
+                      onAtualizada={setEntradaBiblioteca}
+                      onRemovida={() => setEntradaBiblioteca(null)}
+                    />
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className={styles.botaoBiblioteca}
+                        onClick={handleAdicionar}
+                        disabled={adicionando}
+                      >
+                        {adicionando ? "ADICIONANDO..." : "ADICIONAR À BIBLIOTECA"}
+                      </button>
+                      {erroBiblioteca && (
+                        <p className={styles.erroBiblioteca}>{erroBiblioteca}</p>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </div>

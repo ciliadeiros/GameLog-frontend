@@ -2,25 +2,35 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Logo } from "@/components/Logo";
-import { useAuth } from "@/context/AuthContext";
+import { Header } from "@/components/Header";
 import {
-  listGames,
-  listLibrary,
-  removeFromLibrary,
-  updateLibraryEntry,
-  ApiError,
-} from "@/lib/api";
-import shared from "../styles/lista.module.css";
+  EntradaBibliotecaForm,
+  STATUS_LABEL,
+} from "@/components/EntradaBibliotecaForm";
+import { useAuth } from "@/context/AuthContext";
+import { listGames, listLibrary, ApiError } from "@/lib/api";
 import styles from "./page.module.css";
 
-const STATUS_LABEL = {
-  jogando: "Jogando",
-  completo: "Completo",
-  pausado: "Pausado",
-  abandonado: "Abandonado",
-  planejado: "Quero jogar",
+// Cor de cada badge de status no card, direto do Figma.
+const STATUS_COR = {
+  planejado: "#1E8BB3",
+  jogando: "#E4A700",
+  finalizado: "#348850",
+  abandonado: "#413E3B",
 };
+
+// Categorias do painel "FILTRAR POR:". Por enquanto só a estrutura
+// visual do Figma — nenhuma delas filtra a lista ainda (isso é o
+// próximo passo, depois que a gente decidir se o filtro roda no
+// back-end ou no front).
+const CATEGORIAS_FILTRO = [
+  "Avaliações",
+  "Classificação Indicativa",
+  "Data de Lançamento",
+  "Gênero",
+  "Progresso de Jogo",
+  "Tempo de Jogo",
+];
 
 export default function BibliotecaPage() {
   const router = useRouter();
@@ -30,6 +40,9 @@ export default function BibliotecaPage() {
   const [jogosPorId, setJogosPorId] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Qual card está com o formulário de edição aberto (só um por vez).
+  const [entradaExpandidaId, setEntradaExpandidaId] = useState(null);
 
   // Rota protegida: manda pro login se não tiver sessão
   useEffect(() => {
@@ -58,30 +71,19 @@ export default function BibliotecaPage() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  async function handleStatusChange(entrada, novoStatus) {
-    try {
-      const atualizada = await updateLibraryEntry(token, entrada.bib_id, {
-        bib_status: novoStatus,
-      });
-      setEntradas((prev) =>
-        prev.map((e) => (e.bib_id === entrada.bib_id ? atualizada : e))
-      );
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Não foi possível atualizar."
-      );
-    }
+  function handleAtualizada(atualizada) {
+    setEntradas((prev) =>
+      prev.map((e) => (e.bib_id === atualizada.bib_id ? atualizada : e))
+    );
   }
 
-  async function handleRemover(entrada) {
-    try {
-      await removeFromLibrary(token, entrada.bib_id);
-      setEntradas((prev) => prev.filter((e) => e.bib_id !== entrada.bib_id));
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Não foi possível remover."
-      );
-    }
+  function handleRemovida(entrada) {
+    setEntradas((prev) => prev.filter((e) => e.bib_id !== entrada.bib_id));
+    setEntradaExpandidaId(null);
+  }
+
+  function toggleExpandida(bibId) {
+    setEntradaExpandidaId((atual) => (atual === bibId ? null : bibId));
   }
 
   if (authLoading || !user) {
@@ -89,77 +91,81 @@ export default function BibliotecaPage() {
   }
 
   return (
-    <div className={shared.pagina}>
-      <header className={shared.header}>
-        <Logo />
-        <h1 className={shared.titulo}>Minha Biblioteca</h1>
-      </header>
+    <div className={styles.pagina}>
+      <Header active="biblioteca" />
 
-      {loading && <p className={shared.info}>Carregando sua biblioteca...</p>}
-      {error && <p className={shared.erro}>{error}</p>}
+      <div className={styles.conteudo}>
+        {/* ---------- Sidebar de filtros ---------- */}
+        <aside className={styles.sidebar}>
+          <div className={styles.sidebarTitulo}>FILTRAR POR:</div>
+          <ul className={styles.listaFiltros}>
+            {CATEGORIAS_FILTRO.map((categoria) => (
+              <li key={categoria} className={styles.itemFiltro}>
+                {categoria}
+              </li>
+            ))}
+          </ul>
+        </aside>
 
-      {!loading && !error && entradas.length === 0 && (
-        <p className={shared.info}>
-          Sua biblioteca está vazia. Vá até o{" "}
-          <a href="/catalogo" className={styles.link}>
-            catálogo
-          </a>{" "}
-          e adicione um jogo.
-        </p>
-      )}
+        {/* ---------- Grade de jogos ---------- */}
+        <div className={styles.grade}>
+          {loading && <p className={styles.info}>Carregando sua biblioteca...</p>}
+          {error && <p className={styles.erro}>{error}</p>}
 
-      <div className={shared.grid}>
-        {entradas.map((entrada) => {
-          const jogo = jogosPorId[entrada.bib_jgs_id];
-          return (
-            <div key={entrada.bib_id} className={shared.card}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                className={shared.capa}
-                alt={jogo?.jgs_titulo || "Jogo"}
-                src={jogo?.jgs_capa_url || "/images/placeholder.svg"}
-              />
-              <div className={styles.cardConteudo}>
-                <h2 className={shared.cardTitulo}>
-                  {jogo?.jgs_titulo || `Jogo #${entrada.bib_jgs_id}`}
-                </h2>
+          {!loading && !error && entradas.length === 0 && (
+            <p className={styles.info}>
+              Sua biblioteca está vazia. Vá até o{" "}
+              <a href="/catalogo" className={styles.link}>
+                catálogo
+              </a>{" "}
+              e adicione um jogo.
+            </p>
+          )}
 
-                <label className={styles.label}>
-                  Status:
-                  <select
-                    className={styles.select}
-                    value={entrada.bib_status}
-                    onChange={(e) =>
-                      handleStatusChange(entrada, e.target.value)
-                    }
+          <div className={styles.grid}>
+            {entradas.map((entrada) => {
+              const jogo = jogosPorId[entrada.bib_jgs_id];
+              const expandida = entradaExpandidaId === entrada.bib_id;
+
+              return (
+                <div key={entrada.bib_id} className={styles.card}>
+                  <button
+                    type="button"
+                    className={styles.capaBotao}
+                    onClick={() => toggleExpandida(entrada.bib_id)}
+                    aria-expanded={expandida}
                   >
-                    {Object.entries(STATUS_LABEL).map(([valor, label]) => (
-                      <option key={valor} value={valor}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      className={styles.capa}
+                      alt={jogo?.jgs_titulo || "Jogo"}
+                      src={jogo?.jgs_capa_url || "/images/placeholder.svg"}
+                    />
+                    <span
+                      className={styles.badge}
+                      style={{ backgroundColor: STATUS_COR[entrada.bib_status] }}
+                    >
+                      {STATUS_LABEL[entrada.bib_status] ?? entrada.bib_status}
+                    </span>
+                  </button>
 
-                {entrada.bib_usr_nota != null && (
-                  <p className={styles.detalhe}>
-                    Sua nota: {entrada.bib_usr_nota}/10
+                  <p className={styles.tituloCard}>
+                    {jogo?.jgs_titulo || `Jogo #${entrada.bib_jgs_id}`}
                   </p>
-                )}
-                <p className={styles.detalhe}>
-                  Horas jogadas: {entrada.bib_jgs_horas_jogadas}
-                </p>
 
-                <button
-                  className={styles.botaoRemover}
-                  onClick={() => handleRemover(entrada)}
-                >
-                  Remover da biblioteca
-                </button>
-              </div>
-            </div>
-          );
-        })}
+                  {expandida && (
+                    <EntradaBibliotecaForm
+                      token={token}
+                      entrada={entrada}
+                      onAtualizada={handleAtualizada}
+                      onRemovida={() => handleRemovida(entrada)}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

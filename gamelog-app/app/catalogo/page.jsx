@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/Header";
+import { useAuth } from "@/context/AuthContext";
 import { listarRawg, ApiError } from "@/lib/api";
 import shared from "../styles/lista.module.css";
 import styles from "./page.module.css";
@@ -27,6 +29,17 @@ function mensagemErro(err, fallback) {
 }
 
 export default function CatalogoPage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+
+  // Rota protegida: manda pro login se não tiver sessão (mesmo padrão
+  // já usado em app/biblioteca/page.jsx).
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login");
+    }
+  }, [authLoading, user, router]);
+
   // ---------- Destaque (carrossel do topo) ----------
   const [destaques, setDestaques] = useState([]);
   const [destaqueIndex, setDestaqueIndex] = useState(0);
@@ -92,6 +105,10 @@ export default function CatalogoPage() {
     if (categoriaAtiva) return categoriaAtiva.label;
     return "Populares";
   }, [buscaDebounced, categoriaAtiva]);
+
+  if (authLoading || !user) {
+    return null;
+  }
 
   return (
     <div className={styles.pagina}>
