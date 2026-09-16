@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
+import { Modal } from "@/components/Modal";
 import {
   EntradaBibliotecaForm,
   STATUS_LABEL,
 } from "@/components/EntradaBibliotecaForm";
 import { useAuth } from "@/context/AuthContext";
-import { listGames, listLibrary, ApiError } from "@/lib/api";
+import { listGames, listLibrary, updateLibraryEntry, ApiError } from "@/lib/api";
 import styles from "./page.module.css";
 
 // Cor de cada badge de status no card, direto do Figma.
@@ -41,8 +42,9 @@ export default function BibliotecaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Qual card está com o formulário de edição aberto (só um por vez).
-  const [entradaExpandidaId, setEntradaExpandidaId] = useState(null);
+  // Qual entrada está com o modal de nota/review/horas aberto (null = nenhuma).
+  const [entradaModal, setEntradaModal] = useState(null);
+  const [erroStatus, setErroStatus] = useState(null);
 
   // Rota protegida: manda pro login se não tiver sessão
   useEffect(() => {
@@ -79,11 +81,22 @@ export default function BibliotecaPage() {
 
   function handleRemovida(entrada) {
     setEntradas((prev) => prev.filter((e) => e.bib_id !== entrada.bib_id));
-    setEntradaExpandidaId(null);
+    setEntradaModal(null);
   }
 
-  function toggleExpandida(bibId) {
-    setEntradaExpandidaId((atual) => (atual === bibId ? null : bibId));
+  // Muda o status direto pela badge (dropdown) — não passa pelo modal.
+  async function handleStatusChange(entrada, novoStatus) {
+    setErroStatus(null);
+    try {
+      const atualizada = await updateLibraryEntry(token, entrada.bib_id, {
+        bib_status: novoStatus,
+      });
+      handleAtualizada(atualizada);
+    } catch (err) {
+      setErroStatus(
+        err instanceof ApiError ? err.message : "Não foi possível atualizar o status."
+      );
+    }
   }
 
   if (authLoading || !user) {
@@ -111,6 +124,7 @@ export default function BibliotecaPage() {
         <div className={styles.grade}>
           {loading && <p className={styles.info}>Carregando sua biblioteca...</p>}
           {error && <p className={styles.erro}>{error}</p>}
+          {erroStatus && <p className={styles.erro}>{erroStatus}</p>}
 
           {!loading && !error && entradas.length === 0 && (
             <p className={styles.info}>
@@ -125,48 +139,68 @@ export default function BibliotecaPage() {
           <div className={styles.grid}>
             {entradas.map((entrada) => {
               const jogo = jogosPorId[entrada.bib_jgs_id];
-              const expandida = entradaExpandidaId === entrada.bib_id;
 
               return (
                 <div key={entrada.bib_id} className={styles.card}>
-                  <button
-                    type="button"
-                    className={styles.capaBotao}
-                    onClick={() => toggleExpandida(entrada.bib_id)}
-                    aria-expanded={expandida}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      className={styles.capa}
-                      alt={jogo?.jgs_titulo || "Jogo"}
-                      src={jogo?.jgs_capa_url || "/images/placeholder.svg"}
-                    />
-                    <span
+                  <div className={styles.capaWrapper}>
+                    <button
+                      type="button"
+                      className={styles.capaBotao}
+                      onClick={() => setEntradaModal(entrada)}
+                      aria-label={`Editar nota e review de ${jogo?.jgs_titulo || "jogo"}`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        className={styles.capa}
+                        alt={jogo?.jgs_titulo || "Jogo"}
+                        src={jogo?.jgs_capa_url || "/images/placeholder.svg"}
+                      />
+                    </button>
+
+                    {/* Badge de status — um <select> nativo estilizado
+                        pra parecer o badge colorido do Figma. Clicar
+                        nele já troca o status direto, sem abrir modal. */}
+                    <select
                       className={styles.badge}
                       style={{ backgroundColor: STATUS_COR[entrada.bib_status] }}
+                      value={entrada.bib_status}
+                      onChange={(e) => handleStatusChange(entrada, e.target.value)}
+                      aria-label="Status na biblioteca"
                     >
-                      {STATUS_LABEL[entrada.bib_status] ?? entrada.bib_status}
-                    </span>
-                  </button>
+                      {Object.entries(STATUS_LABEL).map(([valor, label]) => (
+                        <option key={valor} value={valor}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
                   <p className={styles.tituloCard}>
                     {jogo?.jgs_titulo || `Jogo #${entrada.bib_jgs_id}`}
                   </p>
-
-                  {expandida && (
-                    <EntradaBibliotecaForm
-                      token={token}
-                      entrada={entrada}
-                      onAtualizada={handleAtualizada}
-                      onRemovida={() => handleRemovida(entrada)}
-                    />
-                  )}
                 </div>
               );
             })}
           </div>
         </div>
       </div>
+
+      {entradaModal && (
+        <Modal
+          titulo={jogosPorId[entradaModal.bib_jgs_id]?.jgs_titulo || "Avaliação"}
+          onFechar={() => setEntradaModal(null)}
+        >
+          <EntradaBibliotecaForm
+            token={token}
+            entrada={entradaModal}
+            onAtualizada={(atualizada) => {
+              handleAtualizada(atualizada);
+              setEntradaModal(null);
+            }}
+            onRemovida={() => handleRemovida(entradaModal)}
+          />
+        </Modal>
+      )}
     </div>
   );
 }

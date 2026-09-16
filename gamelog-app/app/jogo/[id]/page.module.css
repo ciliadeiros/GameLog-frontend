@@ -220,6 +220,69 @@
   font-size: 14px;
 }
 
+/* Indicador de "já está na biblioteca" — só informativo, não é
+   clicável (editar status/nota/review agora é só pela Biblioteca). */
+.indicadorNaBiblioteca {
+  display: inline-block;
+  border-radius: 20px;
+  padding: 14px 24px;
+  background-color: #d9f2e0;
+  color: #1f7a44;
+  font-family: var(--font-base);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Pop-up "Adicionar à Biblioteca" ---------- */
+
+.formAdicionar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.labelAdicionar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-base);
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.selectAdicionar {
+  font-family: var(--font-base);
+  font-size: 15px;
+  color: #1a1a1a;
+  background-color: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.botaoConfirmarAdicionar {
+  border: none;
+  border-radius: 20px;
+  padding: 12px 20px;
+  background-color: var(--color-red, #921013);
+  color: #ffffff;
+  font-family: var(--font-base);
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.botaoConfirmarAdicionar:hover:not(:disabled) {
+  background-color: var(--color-red-hover, #b20000);
+}
+
+.botaoConfirmarAdicionar:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
 /* ---------- Sinopse ---------- */
 
 .sinopse {

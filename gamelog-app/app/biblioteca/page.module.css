@@ -96,16 +96,19 @@
   gap: 8px;
 }
 
-.capaBotao {
+.capaWrapper {
   position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.capaBotao {
   display: block;
   width: 100%;
   padding: 0;
   border: none;
   background: none;
   cursor: pointer;
-  border-radius: 10px;
-  overflow: hidden;
 }
 
 .capa {
@@ -116,17 +119,30 @@
   background-color: #2a2a2a;
 }
 
+/* Badge de status — na verdade um <select> nativo. appearance:none
+   tira a seta padrão do navegador em todos os principais engines, daí
+   ele fica visualmente idêntico à badge do Figma até o usuário clicar. */
 .badge {
   position: absolute;
   right: 10px;
   bottom: 10px;
   padding: 5px 13px;
+  border: none;
   border-radius: 15px;
   color: #ffffff;
   font-family: var(--font-base);
   font-size: 13px;
   font-weight: 800;
   white-space: nowrap;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.badge:hover,
+.badge:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
 }
 
 .tituloCard {

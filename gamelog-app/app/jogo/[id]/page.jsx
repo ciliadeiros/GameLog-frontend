@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
-import { EntradaBibliotecaForm } from "@/components/EntradaBibliotecaForm";
+import { Modal } from "@/components/Modal";
+import { STATUS_LABEL } from "@/components/EntradaBibliotecaForm";
 import { useAuth } from "@/context/AuthContext";
 import {
   addToLibrary,
@@ -63,6 +64,12 @@ export default function DetalhesJogoPage() {
   // se não estiver, fica null e mostramos o botão "Adicionar") ----------
   const [entradaBiblioteca, setEntradaBiblioteca] = useState(null);
   const [carregandoEntrada, setCarregandoEntrada] = useState(true);
+
+  // Pop-up que abre ao clicar em "Adicionar à Biblioteca", só pra
+  // escolher o status inicial. Edição de nota/review/horas depois
+  // disso acontece só na Biblioteca — aqui é só o momento de adicionar.
+  const [modalAberto, setModalAberto] = useState(false);
+  const [statusEscolhido, setStatusEscolhido] = useState("planejado");
   const [adicionando, setAdicionando] = useState(false);
   const [erroBiblioteca, setErroBiblioteca] = useState(null);
 
@@ -93,12 +100,18 @@ export default function DetalhesJogoPage() {
       .finally(() => setCarregandoEntrada(false));
   }, [id, token]);
 
-  async function handleAdicionar() {
+  function handleAbrirModalAdicionar() {
     if (!user) {
       router.push("/login");
       return;
     }
+    setStatusEscolhido("planejado");
+    setErroBiblioteca(null);
+    setModalAberto(true);
+  }
 
+  async function handleConfirmarAdicionar(e) {
+    e.preventDefault();
     setAdicionando(true);
     setErroBiblioteca(null);
 
@@ -107,10 +120,11 @@ export default function DetalhesJogoPage() {
       const jogoLocal = await importarUmJogoRawg(token, id);
       // 2) só então adiciona na biblioteca do usuário, com o id local
       const novaEntrada = await addToLibrary(token, {
-        bib_status: "planejado",
+        bib_status: statusEscolhido,
         bib_jgs_id: jogoLocal.jgs_id,
       });
       setEntradaBiblioteca(novaEntrada);
+      setModalAberto(false);
     } catch (err) {
       setErroBiblioteca(mensagemErro(err, "Não foi possível adicionar à biblioteca."));
     } finally {
@@ -231,21 +245,17 @@ export default function DetalhesJogoPage() {
                   {carregandoEntrada ? (
                     <p className={styles.info}>Verificando sua biblioteca...</p>
                   ) : entradaBiblioteca ? (
-                    <EntradaBibliotecaForm
-                      token={token}
-                      entrada={entradaBiblioteca}
-                      onAtualizada={setEntradaBiblioteca}
-                      onRemovida={() => setEntradaBiblioteca(null)}
-                    />
+                    <span className={styles.indicadorNaBiblioteca}>
+                      ✓ ADICIONADO À BIBLIOTECA
+                    </span>
                   ) : (
                     <>
                       <button
                         type="button"
                         className={styles.botaoBiblioteca}
-                        onClick={handleAdicionar}
-                        disabled={adicionando}
+                        onClick={handleAbrirModalAdicionar}
                       >
-                        {adicionando ? "ADICIONANDO..." : "ADICIONAR À BIBLIOTECA"}
+                        ADICIONAR À BIBLIOTECA
                       </button>
                       {erroBiblioteca && (
                         <p className={styles.erroBiblioteca}>{erroBiblioteca}</p>
@@ -262,6 +272,37 @@ export default function DetalhesJogoPage() {
           </>
         )}
       </div>
+
+      {modalAberto && (
+        <Modal titulo="Adicionar à Biblioteca" onFechar={() => setModalAberto(false)}>
+          <form className={styles.formAdicionar} onSubmit={handleConfirmarAdicionar}>
+            <label className={styles.labelAdicionar}>
+              Status
+              <select
+                className={styles.selectAdicionar}
+                value={statusEscolhido}
+                onChange={(e) => setStatusEscolhido(e.target.value)}
+              >
+                {Object.entries(STATUS_LABEL).map(([valor, label]) => (
+                  <option key={valor} value={valor}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {erroBiblioteca && <p className={styles.erroBiblioteca}>{erroBiblioteca}</p>}
+
+            <button
+              type="submit"
+              className={styles.botaoConfirmarAdicionar}
+              disabled={adicionando}
+            >
+              {adicionando ? "Adicionando..." : "Adicionar"}
+            </button>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

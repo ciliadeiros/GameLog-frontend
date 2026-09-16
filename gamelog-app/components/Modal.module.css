@@ -1,0 +1,53 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.caixa {
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.titulo {
+  font-family: var(--font-base);
+  font-size: 17px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.fechar {
+  border: none;
+  background: none;
+  font-size: 24px;
+  line-height: 1;
+  color: #6b6b6b;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.fechar:hover {
+  color: #1a1a1a;
+}
+
+.conteudo {
+  padding: 20px;
+}

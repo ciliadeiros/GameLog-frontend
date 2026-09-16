@@ -19,18 +19,17 @@ function mensagemErro(err, fallback) {
 }
 
 /**
- * Status + nota (RF010) + review (RF011) + horas jogadas (RF012) de
- * UMA entrada da biblioteca, num formulário só. Usado nos cards de
- * app/biblioteca e na página de detalhes do jogo (quando o jogo já
- * está na biblioteca) — por isso o visual é "auto-contido" (fundo
- * claro próprio) em vez de herdar cor de texto da página: uma dessas
- * duas telas é clara e a outra é escura, e um componente só não dava
- * pra acertar as duas herdando variável de tema.
+ * Nota (RF010) + review (RF011) + horas jogadas (RF012) de UMA entrada
+ * da biblioteca. O status NÃO mora aqui — muda direto pela badge
+ * colorida do card (é um <select> estilizado pra parecer a badge),
+ * já que é a única troca rápida o suficiente pra não precisar abrir
+ * nada. Este formulário é o conteúdo do modal que abre ao clicar no
+ * card.
  *
  * Props:
  * - token: token do usuário logado
  * - entrada: a entrada da biblioteca (LibraryDetailResponse)
- * - onAtualizada(novaEntrada): chamado depois de qualquer alteração salva
+ * - onAtualizada(novaEntrada): chamado depois de salvar
  * - onRemovida(): chamado depois de remover da biblioteca
  */
 export function EntradaBibliotecaForm({ token, entrada, onAtualizada, onRemovida }) {
@@ -41,18 +40,6 @@ export function EntradaBibliotecaForm({ token, entrada, onAtualizada, onRemovida
   const [salvando, setSalvando] = useState(false);
   const [removendo, setRemovendo] = useState(false);
   const [erro, setErro] = useState(null);
-
-  async function handleStatusChange(novoStatus) {
-    setErro(null);
-    try {
-      const atualizada = await updateLibraryEntry(token, entrada.bib_id, {
-        bib_status: novoStatus,
-      });
-      onAtualizada(atualizada);
-    } catch (err) {
-      setErro(mensagemErro(err, "Não foi possível atualizar o status."));
-    }
-  }
 
   async function handleSalvar(e) {
     e.preventDefault();
@@ -88,21 +75,6 @@ export function EntradaBibliotecaForm({ token, entrada, onAtualizada, onRemovida
 
   return (
     <div className={styles.wrapper}>
-      <label className={styles.label}>
-        Status
-        <select
-          className={styles.select}
-          value={entrada.bib_status}
-          onChange={(e) => handleStatusChange(e.target.value)}
-        >
-          {Object.entries(STATUS_LABEL).map(([valor, label]) => (
-            <option key={valor} value={valor}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
-
       <form className={styles.form} onSubmit={handleSalvar}>
         <label className={styles.label}>
           Sua nota (0 a 10)
