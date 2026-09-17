@@ -73,9 +73,10 @@
 .destaque {
   position: relative;
   margin-top: 24px;
-  min-height: clamp(420px, 42vw, 640px);
+  min-height: clamp(420px, 31.25vw, 600px);
   display: flex;
   align-items: center;
+  justify-content: center;
   background-color: #1e1e1e;
   background-size: cover;
   background-position: center;
@@ -83,8 +84,12 @@
 }
 
 .destaqueConteudo {
-  padding: 32px clamp(24px, 4vw, 64px);
-  max-width: 65%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px clamp(64px, 8vw, 120px);
+  max-width: 900px;
+  text-align: center;
 }
 
 .destaqueTituloLink {
@@ -98,22 +103,24 @@
   color: var(--color-white);
   text-transform: uppercase;
   line-height: 1.1;
+  text-align: center;
 }
 
 .destaqueTags {
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .destaqueTag {
-  padding: 8px 18px;
+  padding: 6px 16px;
   border-radius: 20px;
   background-color: rgba(255, 255, 255, 0.9);
   color: #141414;
   font-family: var(--font-base);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .setaEsquerda,
@@ -166,34 +173,50 @@
 
 .categorias {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(6, 280px);
+  justify-content: center;
   gap: 16px;
   padding: 16px clamp(24px, 5vw, 100px) 0;
 }
 
+@media (max-width: 1900px) {
+  .categorias {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}
+
 .categoriaCard {
-  padding: 22px 16px;
+  position: relative;
+  aspect-ratio: 280 / 250;
+  padding: 16px;
   border: none;
   border-radius: 8px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
   background-color: #1e1e1e;
-  color: var(--color-white);
-  font-family: var(--font-base);
-  font-size: 15px;
-  font-weight: 700;
+  background-size: cover;
+  background-position: center;
   cursor: pointer;
-  text-align: center;
+  overflow: hidden;
+}
+
+.categoriaLabel {
+  color: #ffffff;
+  font-family: var(--font-base);
+  font-size: 17px;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
 .categoriaCard:hover {
-  background-color: #2a2a2a;
+  filter: brightness(1.15);
 }
 
 .categoriaAtiva {
-  background-color: var(--color-red);
-}
-
-.categoriaAtiva:hover {
-  background-color: var(--color-red-hover);
+  outline: 3px solid var(--color-red);
+  outline-offset: -3px;
 }
 
 /* ---------- Grade de resultados ---------- */
@@ -204,6 +227,27 @@
 
 .gradeWrapper h2 {
   margin-bottom: 24px;
+}
+
+/* Grade fixa de "2 linhas de 5" — sobrescreve o auto-fill de
+   lista.module.css (que fica genérico pra outras telas que reusem
+   essa mesma classe) só aqui no catálogo. Com PAGE_SIZE = 10, 5
+   colunas formam exatamente 2 linhas. Em telas menores, reduz o
+   número de colunas pra não espremer os cards. */
+.gradeFixa {
+  grid-template-columns: repeat(5, 1fr) !important;
+}
+
+@media (max-width: 1100px) {
+  .gradeFixa {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .gradeFixa {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
 }
 
 /* Texto que fica direto no fundo claro da página (não em cima de um
@@ -220,14 +264,33 @@
 /* ---------- Cards da grade (conteúdo específico do catálogo) ---------- */
 
 .cardConteudo {
+  flex: 1;
   padding: 16px;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  background-color: var(--color-red);
+}
+
+/* Sobrescreve só aqui a proporção de shared.capa (que é 3/4, pensada
+   pra biblioteca) pela proporção exata do wireframe pro card de jogo
+   do catálogo: 337x272. */
+.capaFixa {
+  aspect-ratio: 337 / 272 !important;
+}
+
+.cardCategorias {
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
-.cardNota {
-  color: var(--color-gray-text);
+.cardCategoriaTag {
+  padding: 4px 12px;
+  border-radius: 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--color-red);
   font-family: var(--font-base);
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 700;
 }

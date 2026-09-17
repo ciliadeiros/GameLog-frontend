@@ -75,7 +75,7 @@
    * aproximadamente no centro da tela,
    * um pouco à esquerda.
    */
-  left: 50%;
+  left: 44%;
   top: 50%;
 
   width: min(672px, 35vw);

@@ -125,6 +125,7 @@ export function listarRawg({
   genero,
   tag,
   ordering,
+  aleatorio,
   page = 1,
   pageSize = 20,
 } = {}) {
@@ -136,6 +137,7 @@ export function listarRawg({
   if (genero) params.set("genero", genero);
   if (tag) params.set("tag", tag);
   if (ordering) params.set("ordering", ordering);
+  if (aleatorio) params.set("aleatorio", "true");
 
   return request(`/games/rawg/lista?${params}`);
 }

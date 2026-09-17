@@ -13,16 +13,18 @@ import styles from "./page.module.css";
 // da RAWG: "genero" usa o parâmetro "genres" e "tag" usa "tags" (a RAWG
 // não tem gênero "Terror" nem "Cooperativo" — só existem como tags).
 // Ver app/services/rawg_service.py::listar_jogos_rawg no back-end.
+// "imagem" é só a arte de fundo do card (não vem da RAWG).
 const CATEGORIAS = [
-  { label: "Cooperativo", tag: "co-op" },
-  { label: "Ação", genero: "action" },
-  { label: "Indie", genero: "indie" },
-  { label: "Terror", tag: "horror" },
-  { label: "RPG", genero: "role-playing-games-rpg" },
-  { label: "Plataforma", genero: "platformer" },
+  { label: "Cooperativo", tag: "co-op", imagem: "/images/categorias/cooperativo.jpg" },
+  { label: "Ação", genero: "action", imagem: "/images/categorias/acao.jpg" },
+  { label: "Indie", genero: "indie", imagem: "/images/categorias/indie.png" },
+  { label: "Terror", tag: "horror", imagem: "/images/categorias/terror.jpg" },
+  { label: "RPG", genero: "role-playing-games-rpg", imagem: "/images/categorias/rpg.jpg" },
+  { label: "Plataforma", genero: "platformer", imagem: "/images/categorias/plataforma.jpg" },
 ];
 
-const PAGE_SIZE = 18;
+const PAGE_SIZE = 10; // 2 linhas de 5 na grade de "Populares"
+const PAGE_SIZE_DESTAQUES = 4; // itens do carrossel do topo
 
 function mensagemErro(err, fallback) {
   return err instanceof ApiError ? err.message : fallback;
@@ -46,7 +48,7 @@ export default function CatalogoPage() {
   const [destaqueErro, setDestaqueErro] = useState(null);
 
   useEffect(() => {
-    listarRawg({ ordering: "-added", pageSize: 6 })
+    listarRawg({ aleatorio: true, pageSize: PAGE_SIZE_DESTAQUES })
       .then((data) => setDestaques(data?.results ?? []))
       .catch((err) =>
         setDestaqueErro(mensagemErro(err, "Não foi possível carregar os destaques."))
@@ -88,6 +90,7 @@ export default function CatalogoPage() {
       nome: buscaDebounced || undefined,
       genero: categoriaAtiva?.genero,
       tag: categoriaAtiva?.tag,
+      aleatorio: !buscaDebounced,
       pageSize: PAGE_SIZE,
     })
       .then((data) => setJogos(data?.results ?? []))
@@ -204,9 +207,12 @@ export default function CatalogoPage() {
             className={`${styles.categoriaCard} ${
               categoriaAtiva?.label === categoria.label ? styles.categoriaAtiva : ""
             }`}
+            style={{
+              backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.05) 45%, rgba(0,0,0,0.8) 100%), url(${categoria.imagem})`,
+            }}
             onClick={() => selecionarCategoria(categoria)}
           >
-            {categoria.label}
+            <span className={styles.categoriaLabel}>{categoria.label}</span>
           </button>
         ))}
       </div>
@@ -223,20 +229,26 @@ export default function CatalogoPage() {
           <p className={`${shared.info} ${styles.infoEscuro}`}>Nenhum jogo encontrado.</p>
         )}
 
-        <div className={shared.grid}>
+        <div className={`${shared.grid} ${styles.gradeFixa}`}>
           {jogos.map((jogo) => (
             <Link key={jogo.id} href={`/jogo/${jogo.id}`} className={shared.card}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                className={shared.capa}
+                className={`${shared.capa} ${styles.capaFixa}`}
                 alt={jogo.name}
                 src={jogo.background_image || "/images/placeholder.svg"}
               />
               <div className={styles.cardConteudo}>
                 <h2 className={shared.cardTitulo}>{jogo.name}</h2>
-                <p className={styles.cardNota}>
-                  Nota: {jogo.rating?.toFixed ? jogo.rating.toFixed(1) : "—"}
-                </p>
+                {(jogo.genres ?? []).length > 0 && (
+                  <div className={styles.cardCategorias}>
+                    {jogo.genres.slice(0, 2).map((g) => (
+                      <span key={g.id} className={styles.cardCategoriaTag}>
+                        {g.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </Link>
           ))}
