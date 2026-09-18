@@ -83,19 +83,32 @@ export default function CatalogoPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
+    let cancelado = false;
 
-    listarRawg({
-      nome: buscaDebounced || undefined,
-      genero: categoriaAtiva?.genero,
-      tag: categoriaAtiva?.tag,
-      aleatorio: !buscaDebounced,
-      pageSize: PAGE_SIZE,
-    })
-      .then((data) => setJogos(data?.results ?? []))
-      .catch((err) => setError(mensagemErro(err, "Não foi possível carregar o catálogo.")))
-      .finally(() => setLoading(false));
+    async function carregarJogos() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await listarRawg({
+          nome: buscaDebounced || undefined,
+          genero: categoriaAtiva?.genero,
+          tag: categoriaAtiva?.tag,
+          aleatorio: !buscaDebounced,
+          pageSize: PAGE_SIZE,
+        });
+        if (!cancelado) setJogos(data?.results ?? []);
+      } catch (err) {
+        if (!cancelado) setError(mensagemErro(err, "Não foi possível carregar o catálogo."));
+      } finally {
+        if (!cancelado) setLoading(false);
+      }
+    }
+
+    carregarJogos();
+    return () => {
+      cancelado = true;
+    };
   }, [buscaDebounced, categoriaAtiva]);
 
   function selecionarCategoria(categoria) {

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Modal } from "@/components/Modal";
+import { ReviewsJogo } from "@/components/ReviewsJogo";
 import { STATUS_LABEL } from "@/components/EntradaBibliotecaForm";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -75,29 +76,56 @@ export default function DetalhesJogoPage() {
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
-    setError(null);
+    let cancelado = false;
 
-    getGameDetailsRawg(id)
-      .then(setJogo)
-      .catch((err) => setError(mensagemErro(err, "Não foi possível carregar esse jogo.")))
-      .finally(() => setLoading(false));
+    async function carregarJogo() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const dados = await getGameDetailsRawg(id);
+        if (!cancelado) setJogo(dados);
+      } catch (err) {
+        if (!cancelado) setError(mensagemErro(err, "Não foi possível carregar esse jogo."));
+      } finally {
+        if (!cancelado) setLoading(false);
+      }
+    }
+
+    carregarJogo();
+    return () => {
+      cancelado = true;
+    };
   }, [id]);
 
   useEffect(() => {
-    if (!id || !token) {
-      setCarregandoEntrada(false);
-      return;
-    }
-    setCarregandoEntrada(true);
+    let cancelado = false;
 
-    getMinhaEntradaBiblioteca(token, id)
-      .then(setEntradaBiblioteca)
-      // se der erro aqui, não é grave o suficiente pra travar a página
-      // inteira — só assume que não está na biblioteca e mostra o
-      // botão de adicionar normalmente.
-      .catch(() => setEntradaBiblioteca(null))
-      .finally(() => setCarregandoEntrada(false));
+    async function carregarEntrada() {
+      if (!id || !token) {
+        setCarregandoEntrada(false);
+        return;
+      }
+
+      setCarregandoEntrada(true);
+
+      try {
+        const entrada = await getMinhaEntradaBiblioteca(token, id);
+        if (!cancelado) setEntradaBiblioteca(entrada);
+      } catch {
+        // se der erro aqui, não é grave o suficiente pra travar a página
+        // inteira — só assume que não está na biblioteca e mostra o
+        // botão de adicionar normalmente.
+        if (!cancelado) setEntradaBiblioteca(null);
+      } finally {
+        if (!cancelado) setCarregandoEntrada(false);
+      }
+    }
+
+    carregarEntrada();
+    return () => {
+      cancelado = true;
+    };
   }, [id, token]);
 
   function handleAbrirModalAdicionar() {
@@ -269,6 +297,8 @@ export default function DetalhesJogoPage() {
             {jogo.description_raw && (
               <div className={styles.sinopse}>{jogo.description_raw}</div>
             )}
+
+            <ReviewsJogo rawgId={id} />
           </>
         )}
       </div>

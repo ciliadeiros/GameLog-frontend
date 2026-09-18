@@ -166,3 +166,10 @@ export function removeFromLibrary(token, id) {
 export function getMinhaEntradaBiblioteca(token, rawgId) {
   return request(`/games/rawg/${rawgId}/minha-biblioteca`, { token });
 }
+
+// GET /games/rawg/{id}/reviews — reviews públicas (nota + texto) de
+// outros usuários pra esse jogo (RF013). Rota pública, sem token: se
+// o jogo nunca foi importado localmente, a API já devolve [].
+export function getReviewsRawg(rawgId) {
+  return request(`/games/rawg/${rawgId}/reviews`);
+}
