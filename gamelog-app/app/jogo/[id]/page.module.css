@@ -27,6 +27,7 @@
   font-size: 15px;
   font-weight: 800;
   color: #1a1a1a;
+  text-transform: uppercase;
   margin-bottom: 24px;
 }
 
@@ -34,10 +35,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 36px;
   height: 36px;
   border-radius: 50%;
   background-color: rgba(255, 100, 100, 0.35);
+  color: #1a1a1a;
+}
+
+/* A seta em si (svg) é centralizada pelo flex do .voltar span acima;
+   line-height 0 evita qualquer deslocamento vertical vindo da fonte. */
+.voltar span svg {
+  display: block;
 }
 
 /* ---------- Estado ---------- */
@@ -83,43 +92,96 @@
   background-color: #2a2a2a;
 }
 
+/* Selo de classificação indicativa (esquerda) e nota do GameLog
+   (direita) — extremidades opostas da mesma linha, abaixo da capa. */
 .linhaMeta {
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: space-between;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-.classificacao {
-  padding: 6px 16px;
-  border-radius: 6px;
-  background-color: #f5a623;
-  color: #1a1a1a;
-  font-family: var(--font-base);
-  font-weight: 800;
-  font-size: 14px;
-  text-transform: uppercase;
-}
+/* ---------- Classificação indicativa (modelo ClassInd) ---------- */
 
-.avaliacao {
-  display: inline-flex;
+.classificacao {
+  display: flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-base);
-  font-size: 24px;
-  font-weight: 800;
-  color: #1a1a1a;
 }
 
-.estrela {
-  color: #f5c518;
+.classificacaoNumero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-family: var(--font-base);
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.classificacaoTextos {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.classificacaoRotulo {
+  font-family: var(--font-base);
+  font-weight: 800;
+  font-size: 13px;
+  color: #1a1a1a;
+  letter-spacing: 0.02em;
+}
+
+.classificacaoDescritores {
+  font-family: var(--font-base);
+  font-weight: 700;
+  font-size: 11px;
+  color: #6a6a6a;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* ---------- Nota do GameLog (estrelas) ---------- */
+
+.avaliacaoGameLog {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.estrelasWrapper {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.avaliacaoGameLogNota {
+  font-family: var(--font-base);
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a1a;
 }
 
 .numAvaliacoes {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 400;
   font-style: italic;
   color: #4a4a4a;
+}
+
+.semAvaliacoes {
+  font-family: var(--font-base);
+  font-size: 13px;
+  font-style: italic;
+  color: #7a7a7a;
 }
 
 /* ---------- Coluna de informações ---------- */
@@ -185,13 +247,63 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-/* ---------- Ação (adicionar à biblioteca) ---------- */
+/* ---------- Nota da RAWG ---------- */
+/* Estilo deliberadamente bem diferente da nota do GameLog acima
+   (chip escuro monocromático, sem estrelas) pra não parecer a mesma
+   informação — é a nota da RAWG, não a do GameLog. */
+.notaRawg {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background-color: #1a1a1a;
+}
+
+.notaRawgFonte {
+  font-family: var(--font-base);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #9a9a9a;
+}
+
+.notaRawgValor {
+  font-family: var(--font-base);
+  font-size: 16px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.notaRawgMax {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9a9a9a;
+}
+
+.notaRawgCount {
+  font-family: var(--font-base);
+  font-size: 12px;
+  font-weight: 400;
+  font-style: italic;
+  color: #9a9a9a;
+}
+
+/* ---------- Ação (adicionar/remover da biblioteca) ---------- */
 
 .acao {
   margin-top: 8px;
 }
 
+.iconeBookmark {
+  flex-shrink: 0;
+}
+
 .botaoBiblioteca {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   border: none;
   border-radius: 20px;
   padding: 14px 24px;
@@ -201,6 +313,7 @@
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
   cursor: pointer;
 }
 
@@ -220,10 +333,15 @@
   font-size: 14px;
 }
 
-/* Indicador de "já está na biblioteca" — só informativo, não é
-   clicável (editar status/nota/review agora é só pela Biblioteca). */
+/* "Já está na biblioteca" agora é um botão clicável (remove da
+   biblioteca), não só um indicador — mesmo estilo visual de antes
+   (fundo/cor verdes), só que agora com o ícone de bookmark preenchido
+   e ação de clique. */
 .indicadorNaBiblioteca {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
   border-radius: 20px;
   padding: 14px 24px;
   background-color: #d9f2e0;
@@ -232,6 +350,17 @@
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.indicadorNaBiblioteca:hover:not(:disabled) {
+  background-color: #c3ecd0;
+}
+
+.indicadorNaBiblioteca:disabled {
+  cursor: default;
+  opacity: 0.8;
 }
 
 /* ---------- Pop-up "Adicionar à Biblioteca" ---------- */

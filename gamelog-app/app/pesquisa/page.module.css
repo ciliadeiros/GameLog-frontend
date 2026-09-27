@@ -1,0 +1,283 @@
+.pagina {
+  --color-bg-top: #ededed;
+  --color-bg-bottom: #adacac;
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--color-bg-top) 0%, var(--color-bg-bottom) 100%);
+  color: #000000;
+  padding-bottom: 80px;
+}
+
+.principal {
+  width: min(1400px, calc(100% - 64px));
+  margin: 0 auto;
+}
+
+/* ---------- Busca ---------- */
+
+.buscaWrapper {
+  display: flex;
+  justify-content: center;
+  padding-top: 40px;
+}
+
+.buscaCaixa {
+  position: relative;
+  width: min(630px, 100%);
+  height: 44px;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 3px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.buscaInput {
+  width: 100%;
+  height: 100%;
+  padding: 0 46px 0 20px;
+  border: 0;
+  border-radius: 22px;
+  outline: none;
+  background: transparent;
+  color: #000000;
+  font-family: "Roboto", Arial, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.buscaInput::placeholder {
+  color: #6a6a6a;
+  opacity: 1;
+}
+
+.buscaInput:focus {
+  box-shadow: inset 0 0 0 2px var(--color-red);
+}
+
+.buscaIcone {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  pointer-events: none;
+}
+
+/* ---------- Layout: sidebar + resultados ---------- */
+
+.layout {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  column-gap: 56px;
+  align-items: start;
+  margin-top: 40px;
+}
+
+.filtros {
+  padding-top: 0;
+}
+
+.filterGroup {
+  width: 190px;
+  margin-bottom: 26px;
+}
+
+.filterGroup h2 {
+  margin: 0 0 4px;
+  color: #000000;
+  font-family: "Public Sans", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 22px;
+  letter-spacing: 0.02em;
+}
+
+.filterOptions {
+  display: flex;
+  flex-direction: column;
+}
+
+.filterOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  padding: 5px 0 5px 26px;
+  /* No protótipo, o texto das opções (Ação, Aventura...) é preto,
+     igual ao cabeçalho da categoria — só o cabeçalho geral da página
+     ("Perfil" etc.) usa o vermelho vivo da marca. */
+  color: #1a1a1a;
+  font-family: "Public Sans", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.filterOption input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  margin: 0;
+  border: 1px solid #4a4a4a;
+  background: transparent;
+  cursor: pointer;
+}
+
+.filterOption input:checked {
+  background: #921013;
+  border-color: #921013;
+  box-shadow: inset 0 0 0 3px #ededed;
+}
+
+.filterOption input:focus-visible {
+  outline: 2px solid #570d0d;
+  outline-offset: 2px;
+}
+
+.limparFiltros {
+  margin: -4px 0 24px 26px;
+  border: 0;
+  background: transparent;
+  color: #921013;
+  font: 700 13px "Public Sans", Arial, sans-serif;
+  cursor: pointer;
+}
+
+.resultados {
+  min-width: 0;
+}
+
+.infoEscuro {
+  color: #333333;
+  font-family: "Public Sans", Arial, sans-serif;
+  font-size: 15px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: 22px;
+  row-gap: 30px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  color: #000000;
+}
+
+.card:hover .capa {
+  transform: translateY(-2px);
+}
+
+.capa {
+  display: block;
+  width: 100%;
+  aspect-ratio: 277 / 145;
+  object-fit: cover;
+  border-radius: 2px;
+  transition: transform 0.15s ease;
+}
+
+.cardTitulo {
+  display: block;
+  margin-top: 7px;
+  color: #000000;
+  font-family: "Public Sans", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.carregarMais {
+  display: block;
+  margin: 32px auto 0;
+  padding: 11px 28px;
+  border: 0;
+  border-radius: 20px;
+  background: #921013;
+  color: #ffffff;
+  font-family: "Public Sans", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.carregarMais:hover {
+  background: #570d0d;
+}
+
+.carregarMais:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (max-width: 1150px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .layout {
+    column-gap: 32px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 18px;
+  }
+}
+
+@media (max-width: 700px) {
+  .principal {
+    width: calc(100% - 32px);
+  }
+
+  .buscaWrapper {
+    padding-top: 24px;
+  }
+
+  .layout {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .filtros {
+    width: 100%;
+  }
+
+  .filterGroup {
+    width: 100%;
+    margin-bottom: 18px;
+  }
+
+  .filterOptions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filterOption {
+    padding-left: 4px;
+  }
+
+  .resultados {
+    width: 100%;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 16px;
+    row-gap: 22px;
+  }
+}
+
+@media (max-width: 420px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,123 @@
+.sidebar {
+  flex: 0 0 280px;
+  background-color: #eeeeee;
+  border-radius: 5px;
+  box-shadow: 6px 6px 10px 0 rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  position: sticky;
+  top: 24px;
+}
+
+.sidebarTitulo {
+  background-color: var(--color-red);
+  color: #ffffff;
+  font-family: var(--font-base);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 25px;
+}
+
+.listaFiltros {
+  list-style: none;
+}
+
+.itemFiltro {
+  display: block;
+  width: 100%;
+  padding: 14px 25px;
+  border: none;
+  border-top: 1px solid #c5c5c5;
+  background: none;
+  color: var(--color-red);
+  font-family: var(--font-base);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+}
+
+.itemFiltro:hover {
+  background-color: #e2e2e2;
+}
+
+.itemFiltro[aria-expanded="true"] {
+  background-color: var(--color-red);
+  color: #ffffff;
+}
+
+.painelFiltro {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 25px 16px;
+  background-color: #f7f7f7;
+  border-top: 1px solid #c5c5c5;
+}
+
+.opcaoFiltro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-base);
+  font-size: 14px;
+  color: #333333;
+  cursor: pointer;
+}
+
+.opcaoFiltro input {
+  cursor: pointer;
+}
+
+.inputFiltro {
+  font-family: var(--font-base);
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid #c5c5c5;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+
+.dataRange {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dataLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-base);
+  font-size: 13px;
+  font-weight: 700;
+  color: #333333;
+}
+
+.dataInput {
+  font-family: var(--font-base);
+  font-size: 14px;
+  padding: 6px 8px;
+  border: 1px solid #c5c5c5;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+
+.limparFiltros {
+  display: block;
+  width: 100%;
+  padding: 12px 25px;
+  border: none;
+  border-top: 1px solid #c5c5c5;
+  background-color: #ffffff;
+  color: var(--color-red);
+  font-family: var(--font-base);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+
+.limparFiltros:hover {
+  background-color: #f0f0f0;
+}

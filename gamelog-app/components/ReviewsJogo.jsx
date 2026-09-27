@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ApiError, getReviewsRawg } from "@/lib/api";
 import styles from "./ReviewsJogo.module.css";
 
 function formatarData(iso) {
@@ -20,49 +18,20 @@ function iniciais(nome) {
  * RF013 — reviews públicas de outros usuários pra este jogo, exibidas
  * na página de detalhes (app/jogo/[id]/page.jsx). Só leitura: não tem
  * formulário aqui, quem quiser avaliar continua fazendo isso pela
- * Biblioteca (RF010-012). Recebe o id da RAWG do jogo já carregado
- * pela página, e busca as reviews sozinho via GET
- * /games/rawg/{rawgId}/reviews (rota pública, sem token).
+ * Biblioteca (RF010-012).
+ *
+ * As reviews agora vêm por prop (buscadas uma única vez em
+ * app/jogo/[id]/page.jsx, via GET /games/rawg/{rawgId}/reviews) em vez
+ * de cada componente buscar sozinho — a própria página já precisa
+ * dessa mesma lista pra calcular a nota do GameLog (média em estrelas)
+ * mostrada ao lado da imagem, então evitamos duas chamadas iguais.
  *
  * Props:
- * - rawgId: id do jogo na RAWG (mesmo usado por getGameDetailsRawg)
+ * - reviews: array de reviews (já carregado)
+ * - loading: true enquanto a página ainda está buscando
+ * - erro: mensagem de erro, se a busca falhou
  */
-export function ReviewsJogo({ rawgId }) {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState(null);
-
-  useEffect(() => {
-    if (!rawgId) return;
-
-    let cancelado = false;
-
-    async function carregarReviews() {
-      setLoading(true);
-      setErro(null);
-
-      try {
-        const data = await getReviewsRawg(rawgId);
-        if (!cancelado) setReviews(data ?? []);
-      } catch (err) {
-        if (!cancelado) {
-          setErro(
-            err instanceof ApiError
-              ? err.message
-              : "Não foi possível carregar as reviews."
-          );
-        }
-      } finally {
-        if (!cancelado) setLoading(false);
-      }
-    }
-
-    carregarReviews();
-    return () => {
-      cancelado = true;
-    };
-  }, [rawgId]);
-
+export function ReviewsJogo({ reviews = [], loading = false, erro = null }) {
   return (
     <section className={styles.secao}>
       <h2 className={styles.titulo}>

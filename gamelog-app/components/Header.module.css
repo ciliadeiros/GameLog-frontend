@@ -1,39 +1,151 @@
 .topo {
+  position: relative;
+  z-index: 10;
   display: flex;
   align-items: center;
-  gap: 40px;
-  padding: 20px clamp(24px, 5vw, 100px);
-  background-color: var(--color-red);
+  height: 70px;
+  padding: 0 clamp(24px, 4vw, 56px);
+  background: var(--color-red);
+  box-shadow: 0 4px 10px rgba(102, 0, 0, 0.25);
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.logo {
+  width: auto !important;
+  height: 38px !important;
+  max-width: none;
 }
 
 .nav {
   display: flex;
-  gap: 28px;
+  align-items: center;
+  gap: 30px;
   margin-left: auto;
 }
 
 .navLink,
 .navLinkAtivo {
-  font-family: var(--font-base);
+  color: rgba(255, 255, 255, 0.82);
+  font-family: "Public Sans", Arial, sans-serif;
   font-size: 15px;
-  color: var(--color-gray-text);
+  line-height: 15px;
+  white-space: nowrap;
 }
 
-.navLinkAtivo {
-  color: var(--color-white);
-  font-weight: 700;
-}
-
+.navLinkAtivo,
 .navLink:hover {
-  color: var(--color-white);
+  color: #ffffff;
+  font-weight: 700;
 }
 
 .perfil {
-  font-family: var(--font-base);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-white);
-  background-color: rgba(255, 255, 255, 0.12);
-  padding: 8px 16px;
-  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  height: 29px;
+  margin-left: 24px;
+  border-radius: 15px;
+  background: #f90606;
+  color: #ffffff;
+  font-family: "Public Sans", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.perfil svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.configuracoes {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  /* Antes era igual à cor de fundo do header (#570d0d), o que deixava
+     o ícone invisível — agora usa um tom claro pra aparecer de verdade
+     em cima do vermelho escuro. */
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+}
+
+.configuracoes:hover {
+  color: #ffffff;
+}
+
+.configuracoes svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 1050px) {
+  .topo {
+    padding: 0 24px;
+  }
+
+  .logo {
+    height: 32px !important;
+  }
+
+  .nav {
+    gap: 18px;
+  }
+
+  .navLink,
+  .navLinkAtivo {
+    font-size: 14px;
+  }
+
+  .perfil {
+    margin-left: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .topo {
+    height: 60px;
+    padding: 0 16px;
+  }
+
+  .logo {
+    height: 26px !important;
+  }
+
+  .nav {
+    gap: 12px;
+  }
+
+  .navLink,
+  .navLinkAtivo {
+    font-size: 12px;
+  }
+
+  .perfil span {
+    display: none;
+  }
+
+  .perfil {
+    width: 29px;
+    height: 29px;
+    padding: 0;
+    margin-left: 10px;
+    border-radius: 50%;
+  }
+
+  .configuracoes {
+    display: none;
+  }
 }

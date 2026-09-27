@@ -4,6 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Modal } from "@/components/Modal";
+import { NavLink } from "@/components/NavLink";
+import {
+  FiltroSidebar,
+  OpcaoFiltroCheckbox,
+  CampoTextoFiltro,
+  useConjuntoFiltro,
+} from "@/components/FiltroSidebar";
+import filtroStyles from "@/components/FiltroSidebar.module.css";
 import {
   EntradaBibliotecaForm,
   STATUS_LABEL,
@@ -54,33 +62,6 @@ const OPCOES_TEMPO_JOGO = [
   { valor: "mais5", label: "Mais de 5h", teste: (h) => h >= 5 },
 ];
 
-const CATEGORIAS_FILTRO = [
-  { chave: "avaliacoes", label: "Avaliações" },
-  { chave: "classificacao", label: "Classificação Indicativa" },
-  { chave: "data", label: "Data de Lançamento" },
-  { chave: "genero", label: "Gênero" },
-  { chave: "progresso", label: "Progresso de Jogo" },
-  { chave: "tempo", label: "Tempo de Jogo" },
-];
-
-function useConjuntoFiltro(inicial = []) {
-  const [conjunto, setConjunto] = useState(new Set(inicial));
-
-  function alternar(valor) {
-    setConjunto((atual) => {
-      const novo = new Set(atual);
-      if (novo.has(valor)) {
-        novo.delete(valor);
-      } else {
-        novo.add(valor);
-      }
-      return novo;
-    });
-  }
-
-  return [conjunto, alternar, () => setConjunto(new Set())];
-}
-
 export default function BibliotecaPage() {
   const router = useRouter();
   const { user, token, loading: authLoading } = useAuth();
@@ -95,7 +76,6 @@ export default function BibliotecaPage() {
   const [erroStatus, setErroStatus] = useState(null);
 
   // ---------- Filtros ----------
-  const [categoriaAberta, setCategoriaAberta] = useState(null);
   const [avaliacoes, toggleAvaliacao, limparAvaliacoes] = useConjuntoFiltro();
   const [classificacoes, toggleClassificacao, limparClassificacoes] = useConjuntoFiltro();
   const [progresso, toggleProgresso, limparProgresso] = useConjuntoFiltro();
@@ -250,121 +230,113 @@ export default function BibliotecaPage() {
 
       <div className={styles.conteudo}>
         {/* ---------- Sidebar de filtros ---------- */}
-        <aside className={styles.sidebar}>
-          <div className={styles.sidebarTitulo}>FILTRAR POR:</div>
-          <ul className={styles.listaFiltros}>
-            {CATEGORIAS_FILTRO.map((categoria) => {
-              const aberta = categoriaAberta === categoria.chave;
-              return (
-                <li key={categoria.chave}>
-                  <button
-                    type="button"
-                    className={styles.itemFiltro}
-                    onClick={() => setCategoriaAberta(aberta ? null : categoria.chave)}
-                    aria-expanded={aberta}
-                  >
-                    {categoria.label}
-                  </button>
-
-                  {aberta && (
-                    <div className={styles.painelFiltro}>
-                      {categoria.chave === "avaliacoes" &&
-                        OPCOES_AVALIACAO.map((n) => (
-                          <label key={n} className={styles.opcaoFiltro}>
-                            <input
-                              type="checkbox"
-                              checked={avaliacoes.has(n)}
-                              onChange={() => toggleAvaliacao(n)}
-                            />
-                            {n.toFixed(1)}
-                          </label>
-                        ))}
-
-                      {categoria.chave === "classificacao" &&
-                        OPCOES_CLASSIFICACAO.map((valor) => (
-                          <label key={valor} className={styles.opcaoFiltro}>
-                            <input
-                              type="checkbox"
-                              checked={classificacoes.has(valor)}
-                              onChange={() => toggleClassificacao(valor)}
-                            />
-                            {valor}
-                          </label>
-                        ))}
-
-                      {categoria.chave === "data" && (
-                        <div className={styles.dataRange}>
-                          <label className={styles.dataLabel}>
-                            De
-                            <input
-                              type="date"
-                              className={styles.dataInput}
-                              value={dataDe}
-                              onChange={(e) => setDataDe(e.target.value)}
-                            />
-                          </label>
-                          <label className={styles.dataLabel}>
-                            Até
-                            <input
-                              type="date"
-                              className={styles.dataInput}
-                              value={dataAte}
-                              onChange={(e) => setDataAte(e.target.value)}
-                            />
-                          </label>
-                        </div>
-                      )}
-
-                      {categoria.chave === "genero" && (
-                        <input
-                          type="text"
-                          className={styles.inputFiltro}
-                          placeholder="Ex.: Fantasia, Terror"
-                          value={genero}
-                          onChange={(e) => setGenero(e.target.value)}
-                        />
-                      )}
-
-                      {categoria.chave === "progresso" &&
-                        OPCOES_PROGRESSO.map((opcao) => (
-                          <label key={opcao.valor} className={styles.opcaoFiltro}>
-                            <input
-                              type="checkbox"
-                              checked={progresso.has(opcao.valor)}
-                              onChange={() => toggleProgresso(opcao.valor)}
-                            />
-                            {opcao.label}
-                          </label>
-                        ))}
-
-                      {categoria.chave === "tempo" &&
-                        OPCOES_TEMPO_JOGO.map((opcao) => (
-                          <label key={opcao.valor} className={styles.opcaoFiltro}>
-                            <input
-                              type="checkbox"
-                              checked={tempoJogo.has(opcao.valor)}
-                              onChange={() => toggleTempoJogo(opcao.valor)}
-                            />
-                            {opcao.label}
-                          </label>
-                        ))}
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-
-          {filtrosAtivos && (
-            <button
-              type="button"
-              className={styles.limparFiltros}
-              onClick={limparTodosFiltros}
-            >
-              Limpar filtros
-            </button>
-          )}
-        </aside>
+        <FiltroSidebar
+          filtrosAtivos={filtrosAtivos}
+          onLimparFiltros={limparTodosFiltros}
+          categorias={[
+            {
+              chave: "avaliacoes",
+              label: "Avaliações",
+              render: () => (
+                <>
+                  {OPCOES_AVALIACAO.map((n) => (
+                    <OpcaoFiltroCheckbox
+                      key={n}
+                      label={n.toFixed(1)}
+                      checked={avaliacoes.has(n)}
+                      onChange={() => toggleAvaliacao(n)}
+                    />
+                  ))}
+                </>
+              ),
+            },
+            {
+              chave: "classificacao",
+              label: "Classificação Indicativa",
+              render: () => (
+                <>
+                  {OPCOES_CLASSIFICACAO.map((valor) => (
+                    <OpcaoFiltroCheckbox
+                      key={valor}
+                      label={valor}
+                      checked={classificacoes.has(valor)}
+                      onChange={() => toggleClassificacao(valor)}
+                    />
+                  ))}
+                </>
+              ),
+            },
+            {
+              chave: "data",
+              label: "Data de Lançamento",
+              render: () => (
+                <div className={filtroStyles.dataRange}>
+                  <label className={filtroStyles.dataLabel}>
+                    De
+                    <input
+                      type="date"
+                      className={filtroStyles.dataInput}
+                      value={dataDe}
+                      onChange={(e) => setDataDe(e.target.value)}
+                    />
+                  </label>
+                  <label className={filtroStyles.dataLabel}>
+                    Até
+                    <input
+                      type="date"
+                      className={filtroStyles.dataInput}
+                      value={dataAte}
+                      onChange={(e) => setDataAte(e.target.value)}
+                    />
+                  </label>
+                </div>
+              ),
+            },
+            {
+              chave: "genero",
+              label: "Gênero",
+              render: () => (
+                <CampoTextoFiltro
+                  placeholder="Ex.: Fantasia, Terror"
+                  value={genero}
+                  onChange={(e) => setGenero(e.target.value)}
+                />
+              ),
+            },
+            {
+              chave: "progresso",
+              label: "Progresso de Jogo",
+              render: () => (
+                <>
+                  {OPCOES_PROGRESSO.map((opcao) => (
+                    <OpcaoFiltroCheckbox
+                      key={opcao.valor}
+                      label={opcao.label}
+                      checked={progresso.has(opcao.valor)}
+                      onChange={() => toggleProgresso(opcao.valor)}
+                    />
+                  ))}
+                </>
+              ),
+            },
+            {
+              chave: "tempo",
+              label: "Tempo de Jogo",
+              render: () => (
+                <>
+                  {OPCOES_TEMPO_JOGO.map((opcao) => (
+                    <OpcaoFiltroCheckbox
+                      key={opcao.valor}
+                      label={opcao.label}
+                      checked={tempoJogo.has(opcao.valor)}
+                      onChange={() => toggleTempoJogo(opcao.valor)}
+                    />
+                  ))}
+                </>
+              ),
+            },
+          ]}
+        />
 
         {/* ---------- Grade de jogos ---------- */}
         <div className={styles.grade}>
@@ -375,9 +347,9 @@ export default function BibliotecaPage() {
           {!loading && !error && entradas.length === 0 && (
             <p className={styles.info}>
               Sua biblioteca está vazia. Vá até o{" "}
-              <a href="/catalogo" className={styles.link}>
+              <NavLink href="/catalogo" className={styles.link}>
                 catálogo
-              </a>{" "}
+              </NavLink>{" "}
               e adicione um jogo.
             </p>
           )}

@@ -32,29 +32,35 @@
 
 .buscaCaixa {
   position: relative;
+  display: flex;
+  align-items: center;
   width: 100%;
   max-width: 700px;
-}
-
-.buscaInput {
-  width: 100%;
+  min-height: 46px;
   padding: 14px 48px 14px 20px;
-  border: none;
   border-radius: 24px;
   background-color: var(--color-input-bg);
-  color: #1a1a1a;
+  color: var(--color-input-placeholder);
   font-family: var(--font-base);
   font-size: 14px;
   letter-spacing: 0.04em;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
-.buscaInput::placeholder {
-  color: var(--color-input-placeholder);
+.buscaCaixa:hover {
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
 }
 
-.buscaInput:focus {
+.buscaCaixa:focus-visible {
   outline: 2px solid var(--color-red);
+  outline-offset: 2px;
+}
+
+.buscaPlaceholder {
+  color: var(--color-input-placeholder);
 }
 
 .buscaIcone {
@@ -74,13 +80,23 @@
   position: relative;
   margin-top: 24px;
   min-height: clamp(420px, 31.25vw, 600px);
+  overflow: hidden;
+}
+
+/* O link cobre o card inteiro — é nele que a imagem de fundo entra
+   agora (antes ficava em .destaque). Setas e bolinhas são posicionadas
+   por cima, fora deste link (ver JSX: são elementos irmãos), então
+   continuam clicáveis sem disparar a navegação do card. */
+.destaqueLink {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #1e1e1e;
   background-size: cover;
   background-position: center;
-  overflow: hidden;
+  cursor: pointer;
 }
 
 .destaqueConteudo {
@@ -90,10 +106,6 @@
   padding: 32px clamp(64px, 8vw, 120px);
   max-width: 900px;
   text-align: center;
-}
-
-.destaqueTituloLink {
-  display: inline-block;
 }
 
 .destaqueTitulo {
@@ -150,6 +162,39 @@
 .setaEsquerda:hover,
 .setaDireita:hover {
   background-color: var(--color-white);
+}
+
+/* ---------- Bolinhas do carrossel ---------- */
+
+.destaqueBolinhas {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.bolinha {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.bolinha:hover {
+  background-color: rgba(255, 255, 255, 0.75);
+}
+
+.bolinhaAtiva {
+  background-color: var(--color-white);
+  transform: scale(1.2);
 }
 
 /* ---------- Categorias ---------- */
@@ -227,6 +272,31 @@
 
 .gradeWrapper h2 {
   margin-bottom: 24px;
+}
+
+.gradeCabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.gradeCabecalho h2 {
+  margin-bottom: 24px;
+}
+
+.verResultadosLink {
+  font-family: var(--font-base);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-red);
+  white-space: nowrap;
+}
+
+.verResultadosLink:hover {
+  color: var(--color-red-hover);
+  text-decoration: underline;
 }
 
 /* Grade fixa de "2 linhas de 5" — sobrescreve o auto-fill de

@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Header } from "@/components/Header";
+import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/context/AuthContext";
 import { listarRawg, ApiError } from "@/lib/api";
 import shared from "../styles/lista.module.css";
@@ -67,15 +67,8 @@ export default function CatalogoPage() {
     setDestaqueIndex((i) => (i - 1 + destaques.length) % destaques.length);
   }
 
-  // ---------- Busca + categoria ----------
-  const [termoBusca, setTermoBusca] = useState("");
-  const [buscaDebounced, setBuscaDebounced] = useState("");
-  const [categoriaAtiva, setCategoriaAtiva] = useState(null); // item de CATEGORIAS ou null
-
-  useEffect(() => {
-    const id = setTimeout(() => setBuscaDebounced(termoBusca.trim()), 400);
-    return () => clearTimeout(id);
-  }, [termoBusca]);
+  // ---------- Categoria ----------
+  const [categoriaAtiva, setCategoriaAtiva] = useState(null);
 
   // ---------- Grade principal de jogos ----------
   const [jogos, setJogos] = useState([]);
@@ -91,10 +84,9 @@ export default function CatalogoPage() {
 
       try {
         const data = await listarRawg({
-          nome: buscaDebounced || undefined,
           genero: categoriaAtiva?.genero,
           tag: categoriaAtiva?.tag,
-          aleatorio: !buscaDebounced,
+          aleatorio: true,
           pageSize: PAGE_SIZE,
         });
         if (!cancelado) setJogos(data?.results ?? []);
@@ -109,18 +101,16 @@ export default function CatalogoPage() {
     return () => {
       cancelado = true;
     };
-  }, [buscaDebounced, categoriaAtiva]);
+  }, [categoriaAtiva]);
 
   function selecionarCategoria(categoria) {
-    setTermoBusca("");
     setCategoriaAtiva((atual) => (atual?.label === categoria.label ? null : categoria));
   }
 
   const tituloGrade = useMemo(() => {
-    if (buscaDebounced) return `Resultados para "${buscaDebounced}"`;
     if (categoriaAtiva) return categoriaAtiva.label;
     return "Populares";
-  }, [buscaDebounced, categoriaAtiva]);
+  }, [categoriaAtiva]);
 
   if (authLoading || !user) {
     return null;
@@ -133,14 +123,8 @@ export default function CatalogoPage() {
 
       {/* ---------- Busca ---------- */}
       <div className={styles.buscaWrapper}>
-        <div className={styles.buscaCaixa}>
-          <input
-            className={styles.buscaInput}
-            type="text"
-            placeholder="PESQUISAR JOGO"
-            value={termoBusca}
-            onChange={(e) => setTermoBusca(e.target.value)}
-          />
+        <NavLink href="/pesquisa" className={styles.buscaCaixa}>
+          <span className={styles.buscaPlaceholder}>PESQUISAR JOGO</span>
           <svg
             className={styles.buscaIcone}
             viewBox="0 0 24 24"
@@ -158,21 +142,39 @@ export default function CatalogoPage() {
               strokeLinecap="round"
             />
           </svg>
-        </div>
+        </NavLink>
       </div>
 
       {/* ---------- Destaque / carrossel ---------- */}
       {destaqueErro && <p className={shared.erro}>{destaqueErro}</p>}
 
       {destaqueAtual && (
-        <section
-          className={styles.destaque}
-          style={{
-            backgroundImage: destaqueAtual.background_image
-              ? `linear-gradient(90deg, rgba(20,20,20,0.9) 10%, rgba(20,20,20,0.25) 60%, rgba(20,20,20,0.05) 100%), url(${destaqueAtual.background_image})`
-              : undefined,
-          }}
-        >
+        <section className={styles.destaque}>
+          {/* O card inteiro (imagem de fundo + título + tags) é um link
+             só pro jogo em destaque — não só o título. As setas e as
+             bolinhas ficam por cima, como irmãs deste link (não
+             filhas), então clicar nelas não dispara a navegação. */}
+          <NavLink
+            href={`/jogo/${destaqueAtual.id}`}
+            className={styles.destaqueLink}
+            style={{
+              backgroundImage: destaqueAtual.background_image
+                ? `linear-gradient(90deg, rgba(20,20,20,0.9) 10%, rgba(20,20,20,0.25) 60%, rgba(20,20,20,0.05) 100%), url(${destaqueAtual.background_image})`
+                : undefined,
+            }}
+          >
+            <div className={styles.destaqueConteudo}>
+              <h1 className={styles.destaqueTitulo}>{destaqueAtual.name}</h1>
+              <div className={styles.destaqueTags}>
+                {(destaqueAtual.genres ?? []).slice(0, 2).map((g) => (
+                  <span key={g.id} className={styles.destaqueTag}>
+                    {g.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </NavLink>
+
           <button
             type="button"
             className={styles.setaEsquerda}
@@ -182,19 +184,6 @@ export default function CatalogoPage() {
             ←
           </button>
 
-          <div className={styles.destaqueConteudo}>
-            <Link href={`/jogo/${destaqueAtual.id}`} className={styles.destaqueTituloLink}>
-              <h1 className={styles.destaqueTitulo}>{destaqueAtual.name}</h1>
-            </Link>
-            <div className={styles.destaqueTags}>
-              {(destaqueAtual.genres ?? []).slice(0, 2).map((g) => (
-                <span key={g.id} className={styles.destaqueTag}>
-                  {g.name}
-                </span>
-              ))}
-            </div>
-          </div>
-
           <button
             type="button"
             className={styles.setaDireita}
@@ -203,6 +192,23 @@ export default function CatalogoPage() {
           >
             →
           </button>
+
+          {destaques.length > 1 && (
+            <div className={styles.destaqueBolinhas}>
+              {destaques.map((d, i) => (
+                <button
+                  key={d.id}
+                  type="button"
+                  className={`${styles.bolinha} ${
+                    i === destaqueIndex ? styles.bolinhaAtiva : ""
+                  }`}
+                  onClick={() => setDestaqueIndex(i)}
+                  aria-label={`Mostrar destaque: ${d.name}`}
+                  aria-current={i === destaqueIndex}
+                />
+              ))}
+            </div>
+          )}
         </section>
       )}
 
@@ -232,7 +238,9 @@ export default function CatalogoPage() {
 
       {/* ---------- Grade de jogos ---------- */}
       <div className={styles.gradeWrapper}>
-        <h2 className={`${shared.titulo} ${styles.tituloEscuro}`}>{tituloGrade}</h2>
+        <div className={styles.gradeCabecalho}>
+          <h2 className={`${shared.titulo} ${styles.tituloEscuro}`}>{tituloGrade}</h2>
+        </div>
 
         {loading && (
           <p className={`${shared.info} ${styles.infoEscuro}`}>Carregando jogos...</p>
@@ -244,7 +252,7 @@ export default function CatalogoPage() {
 
         <div className={`${shared.grid} ${styles.gradeFixa}`}>
           {jogos.map((jogo) => (
-            <Link key={jogo.id} href={`/jogo/${jogo.id}`} className={shared.card}>
+            <NavLink key={jogo.id} href={`/jogo/${jogo.id}`} className={shared.card}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 className={`${shared.capa} ${styles.capaFixa}`}
@@ -263,7 +271,7 @@ export default function CatalogoPage() {
                   </div>
                 )}
               </div>
-            </Link>
+            </NavLink>
           ))}
         </div>
       </div>
