@@ -1,16 +1,23 @@
+/**
+ * @fileoverview Peças da barra lateral de filtros usada na Biblioteca e na
+ * Pesquisa.
+ */
+
 "use client";
 
 import { useState } from "react";
 import styles from "./FiltroSidebar.module.css";
 
 /**
- * Hook pequeno pra guardar um conjunto de valores selecionados (usado
- * pelos filtros de múltipla escolha, tipo checkboxes de gênero ou
- * avaliação). Vivia direto em app/biblioteca/page.jsx; movido pra cá
- * pra qualquer página com filtros poder usar o mesmo padrão.
+ * Hook que guarda o conjunto de valores marcados em um filtro de múltipla
+ * escolha (checkboxes de gênero, avaliação etc.).
+ *
+ * @param {Array} [inicial=[]] Valores marcados no começo.
+ * @returns {[Set, function(*): void, function(): void]} O conjunto atual, uma
+ * função que marca/desmarca um valor e uma função que limpa tudo.
  */
 export function useConjuntoFiltro(inicial = []) {
-  const [conjunto, setConjunto] = useState(new Set(inicial));
+  const [conjunto, setConjunto] = useState(() => new Set(inicial));
 
   function alternar(valor) {
     setConjunto((atual) => {
@@ -28,11 +35,18 @@ export function useConjuntoFiltro(inicial = []) {
 }
 
 /**
- * Sidebar de filtros em acordeão (título + lista de categorias que
- * abrem/fecham). `categorias` é uma lista de
- * { chave, label, render() }, onde render() devolve o conteúdo do
- * painel (checkboxes, inputs etc.) — essa parte fica por conta de
- * quem usa o componente, já que os filtros mudam de tela pra tela.
+ * Barra lateral de filtros em acordeão: uma lista de categorias que abrem e
+ * fecham, uma de cada vez.
+ *
+ * @param {object} props
+ * @param {{chave: string, label: string, render: function(): JSX.Element}[]}
+ * props.categorias Categorias da barra. render() devolve o conteúdo do painel
+ * (checkboxes, campos etc.), que muda de tela para tela.
+ * @param {boolean} props.filtrosAtivos Mostra o botão "Limpar filtros" quando true.
+ * @param {function(): void} props.onLimparFiltros Chamada ao clicar em "Limpar
+ * filtros".
+ * @param {string} [props.titulo="FILTRAR POR:"] Título da barra.
+ * @returns {JSX.Element}
  */
 export function FiltroSidebar({
   categorias,
@@ -82,9 +96,15 @@ export function FiltroSidebar({
   );
 }
 
-// Pequenos blocos reaproveitáveis pra montar o conteúdo de cada
-// render() sem repetir marcação/classe em toda página que usar a
-// sidebar.
+/**
+ * Checkbox de uma opção de filtro.
+ *
+ * @param {object} props
+ * @param {string} props.label Texto da opção.
+ * @param {boolean} props.checked Se está marcada.
+ * @param {function(): void} props.onChange Chamada ao marcar/desmarcar.
+ * @returns {JSX.Element}
+ */
 export function OpcaoFiltroCheckbox({ label, checked, onChange }) {
   return (
     <label className={styles.opcaoFiltro}>
@@ -94,6 +114,12 @@ export function OpcaoFiltroCheckbox({ label, checked, onChange }) {
   );
 }
 
+/**
+ * Campo de texto de um filtro. Repassa todas as props para o <input>.
+ *
+ * @param {object} props Props de um <input> (value, onChange, placeholder...).
+ * @returns {JSX.Element}
+ */
 export function CampoTextoFiltro(props) {
   return <input type="text" className={styles.inputFiltro} {...props} />;
 }

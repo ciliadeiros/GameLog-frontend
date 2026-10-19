@@ -18,11 +18,6 @@
   box-sizing: border-box;
 }
 
-
-/* =========================
-   FUNDO
-   ========================= */
-
 .login-page__bg {
   position: absolute;
   inset: 0;
@@ -43,11 +38,6 @@
   background: rgba(0, 0, 0, 0.62);
 }
 
-
-/* =========================
-   LOGO
-   ========================= */
-
 .logo {
   position: absolute;
 
@@ -60,21 +50,11 @@
   height: auto;
 }
 
-
-/* =========================
-   CONTEÚDO
-   ========================= */
-
 .login-content {
   position: absolute;
 
   z-index: 2;
 
-  /*
-   * O Figma deixa o formulário
-   * aproximadamente no centro da tela,
-   * um pouco à esquerda.
-   */
   left: 50%;
   top: 50%;
 
@@ -85,11 +65,6 @@
   display: flex;
   flex-direction: column;
 }
-
-
-/* =========================
-   TÍTULO
-   ========================= */
 
 .login-title {
   margin: 0 0 42px;
@@ -105,11 +80,6 @@
   text-align: center;
 }
 
-
-/* =========================
-   FORMULÁRIO
-   ========================= */
-
 .login-form {
   display: flex;
   flex-direction: column;
@@ -118,11 +88,6 @@
 
   gap: 24px;
 }
-
-
-/* =========================
-   INPUT GROUP
-   ========================= */
 
 .input-group {
   display: flex;
@@ -142,11 +107,6 @@
 
   line-height: 1.2;
 }
-
-
-/* =========================
-   INPUT
-   ========================= */
 
 .input-group__field {
   width: 100%;
@@ -177,11 +137,6 @@
   outline-offset: 1px;
 }
 
-
-/* =========================
-   ERRO
-   ========================= */
-
 .erro {
   margin: -8px 0 0;
 
@@ -192,11 +147,6 @@
 
   text-align: center;
 }
-
-
-/* =========================
-   BOTÃO
-   ========================= */
 
 .botao-login {
   width: 238px;
@@ -243,11 +193,6 @@
   cursor: not-allowed;
 }
 
-
-/* =========================
-   LINK
-   ========================= */
-
 .link-cadastro {
   display: block;
 
@@ -268,11 +213,6 @@
 .link-cadastro:hover {
   text-decoration: underline;
 }
-
-
-/* =========================
-   RESPONSIVO
-   ========================= */
 
 @media (max-width: 1200px) {
   .login-content {

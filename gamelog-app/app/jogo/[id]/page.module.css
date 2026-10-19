@@ -1,6 +1,4 @@
 .pagina {
-  /* Mesmo esquema do catálogo: sobrescreve só o que precisa pra fundo
-     claro, sem mexer no base.css (ver comentário em catalogo/page.module.css). */
   --color-bg: linear-gradient(180deg, #ededed 0%, #adacac 100%);
 
   min-height: 100vh;
@@ -13,8 +11,6 @@
   margin: 0 auto;
   padding: 32px clamp(24px, 5vw, 70px) 0;
 }
-
-/* ---------- Voltar ---------- */
 
 .voltar {
   display: inline-flex;
@@ -43,13 +39,9 @@
   color: #1a1a1a;
 }
 
-/* A seta em si (svg) é centralizada pelo flex do .voltar span acima;
-   line-height 0 evita qualquer deslocamento vertical vindo da fonte. */
 .voltar span svg {
   display: block;
 }
-
-/* ---------- Estado ---------- */
 
 .info {
   color: #4a4a4a;
@@ -60,8 +52,6 @@
   color: #b00000;
   font-family: var(--font-base);
 }
-
-/* ---------- Grade principal ---------- */
 
 .grade {
   display: grid;
@@ -75,8 +65,6 @@
     grid-template-columns: 1fr;
   }
 }
-
-/* ---------- Coluna da imagem ---------- */
 
 .colunaImagem {
   display: flex;
@@ -92,8 +80,6 @@
   background-color: #2a2a2a;
 }
 
-/* Selo de classificação indicativa (esquerda) e nota do GameLog
-   (direita) — extremidades opostas da mesma linha, abaixo da capa. */
 .linhaMeta {
   display: flex;
   align-items: center;
@@ -101,8 +87,6 @@
   gap: 16px;
   flex-wrap: wrap;
 }
-
-/* ---------- Classificação indicativa (modelo ClassInd) ---------- */
 
 .classificacao {
   display: flex;
@@ -147,8 +131,6 @@
   letter-spacing: 0.03em;
 }
 
-/* ---------- Nota do GameLog (estrelas) ---------- */
-
 .avaliacaoGameLog {
   display: flex;
   align-items: center;
@@ -183,8 +165,6 @@
   font-style: italic;
   color: #7a7a7a;
 }
-
-/* ---------- Coluna de informações ---------- */
 
 .colunaInfo {
   display: flex;
@@ -247,10 +227,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-/* ---------- Nota da RAWG ---------- */
-/* Estilo deliberadamente bem diferente da nota do GameLog acima
-   (chip escuro monocromático, sem estrelas) pra não parecer a mesma
-   informação — é a nota da RAWG, não a do GameLog. */
 .notaRawg {
   display: inline-flex;
   align-items: baseline;
@@ -289,8 +265,6 @@
   font-style: italic;
   color: #9a9a9a;
 }
-
-/* ---------- Ação (adicionar/remover da biblioteca) ---------- */
 
 .acao {
   margin-top: 8px;
@@ -333,10 +307,6 @@
   font-size: 14px;
 }
 
-/* "Já está na biblioteca" agora é um botão clicável (remove da
-   biblioteca), não só um indicador — mesmo estilo visual de antes
-   (fundo/cor verdes), só que agora com o ícone de bookmark preenchido
-   e ação de clique. */
 .indicadorNaBiblioteca {
   display: inline-flex;
   align-items: center;
@@ -362,8 +332,6 @@
   cursor: default;
   opacity: 0.8;
 }
-
-/* ---------- Pop-up "Adicionar à Biblioteca" ---------- */
 
 .formAdicionar {
   display: flex;
@@ -411,8 +379,6 @@
   cursor: default;
   opacity: 0.7;
 }
-
-/* ---------- Sinopse ---------- */
 
 .sinopse {
   margin-top: 56px;

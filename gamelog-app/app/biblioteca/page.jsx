@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Biblioteca pessoal do usuário (/biblioteca) — RF007, RF008 e RF009.
+ *
+ * Lista os jogos adicionados, permite filtrar, trocar o status direto no card e
+ * abrir um modal para editar nota, review e horas jogadas.
+ */
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -17,10 +24,15 @@ import {
   STATUS_LABEL,
 } from "@/components/EntradaBibliotecaForm";
 import { useAuth } from "@/context/AuthContext";
-import { listGames, listLibrary, updateLibraryEntry, ApiError } from "@/lib/api";
+import {
+  listGames,
+  listLibrary,
+  updateLibraryEntry,
+  mensagemErro,
+} from "@/lib/api";
 import styles from "./page.module.css";
 
-// Cor de cada badge de status no card, direto do Figma.
+/** Cor da badge de status de cada card. */
 const STATUS_COR = {
   planejado: "#1E8BB3",
   jogando: "#E4A700",
@@ -28,11 +40,7 @@ const STATUS_COR = {
   abandonado: "#413E3B",
 };
 
-// Opções de cada filtro, do jeito que apareciam no protótipo. Os
-// filtros rodam aqui no front, sobre a lista que já veio de
-// GET /library/ — não existe (ainda) um endpoint de busca filtrada no
-// back-end, e como a biblioteca de um usuário não costuma ter
-// milhares de jogos, filtrar no cliente é suficiente.
+/** Opções do filtro "Progresso de Jogo". O valor é o mesmo status salvo no back-end. */
 const OPCOES_PROGRESSO = [
   { valor: "planejado", label: "Quero Jogar" },
   { valor: "jogando", label: "Jogando" },
@@ -40,21 +48,23 @@ const OPCOES_PROGRESSO = [
   { valor: "abandonado", label: "Abandonei" },
 ];
 
-// A nota (bib_usr_nota) é salva de 0 a 10, mas o protótipo mostra 5
-// níveis (1,0 a 5,0) — tratei cada nível como "nota em estrelas"
-// (nota do usuário dividida por 2 e arredondada). É uma conversão
-// minha pra encaixar os dois formatos, não veio explícita no protótipo.
+/**
+ * Níveis do filtro "Avaliações". A nota do usuário vai de 0 a 10, mas o filtro tem
+ * 5 níveis: cada nível é a nota dividida por 2 e arredondada.
+ */
 const OPCOES_AVALIACAO = [1, 2, 3, 4, 5];
 
-// Bate direto com jgs_classificacao_indicativa (a aproximação a partir
-// do ESRB da RAWG — ver rawg_import_service.py).
+/**
+ * Opções do filtro de classificação indicativa. Precisam bater com o valor de
+ * jgs_classificacao_indicativa salvo no back-end.
+ */
 const OPCOES_CLASSIFICACAO = ["Livre", "10", "12", "14", "16", "+18"];
 
-// Interpretei "Tempo de Jogo" como as horas que O USUÁRIO já jogou
-// (bib_jgs_horas_jogadas) — não o tempo médio do jogo
-// (jgs_tempo_medio_horas) — porque as faixas pequenas (<1h, 1~3h...)
-// fazem mais sentido pra acompanhar o que a pessoa já jogou do que
-// pra duração de um jogo.
+/**
+ * Faixas do filtro "Tempo de Jogo", aplicadas sobre as horas que o próprio
+ * usuário já jogou (bib_jgs_horas_jogadas). `teste` recebe as horas e diz se a
+ * faixa bate.
+ */
 const OPCOES_TEMPO_JOGO = [
   { valor: "menos1", label: "Menos de 1h", teste: (h) => h < 1 },
   { valor: "1a3", label: "1h ~ 3h", teste: (h) => h >= 1 && h < 3 },
@@ -62,6 +72,15 @@ const OPCOES_TEMPO_JOGO = [
   { valor: "mais5", label: "Mais de 5h", teste: (h) => h >= 5 },
 ];
 
+/**
+ * Página da biblioteca. É uma rota protegida: sem sessão, redireciona para o login.
+ *
+ * Busca a biblioteca e a lista de jogos ao mesmo tempo e cruza as duas, porque
+ * GET /library/ só devolve o id do jogo (e não título ou capa). Os filtros rodam
+ * aqui no front, em cima da lista que já foi carregada.
+ *
+ * @returns {JSX.Element|null}
+ */
 export default function BibliotecaPage() {
   const router = useRouter();
   const { user, token, loading: authLoading } = useAuth();
@@ -71,13 +90,12 @@ export default function BibliotecaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Qual entrada está com o modal de nota/review/horas aberto (null = nenhuma).
   const [entradaModal, setEntradaModal] = useState(null);
   const [erroStatus, setErroStatus] = useState(null);
 
-  // ---------- Filtros ----------
   const [avaliacoes, toggleAvaliacao, limparAvaliacoes] = useConjuntoFiltro();
-  const [classificacoes, toggleClassificacao, limparClassificacoes] = useConjuntoFiltro();
+  const [classificacoes, toggleClassificacao, limparClassificacoes] =
+    useConjuntoFiltro();
   const [progresso, toggleProgresso, limparProgresso] = useConjuntoFiltro();
   const [tempoJogo, toggleTempoJogo, limparTempoJogo] = useConjuntoFiltro();
   const [genero, setGenero] = useState("");
@@ -103,7 +121,7 @@ export default function BibliotecaPage() {
     setDataAte("");
   }
 
-  // Rota protegida: manda pro login se não tiver sessão
+  // Rota protegida: sem sessão, manda o usuário para o login.
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
@@ -117,22 +135,20 @@ export default function BibliotecaPage() {
       .then(([biblioteca, jogos]) => {
         setEntradas(biblioteca);
         setJogosPorId(
-          Object.fromEntries(jogos.map((jogo) => [jogo.jgs_id, jogo]))
+          Object.fromEntries(jogos.map((jogo) => [jogo.jgs_id, jogo])),
         );
       })
       .catch((err) =>
         setError(
-          err instanceof ApiError
-            ? err.message
-            : "Não foi possível carregar sua biblioteca."
-        )
+          mensagemErro(err, "Não foi possível carregar sua biblioteca."),
+        ),
       )
       .finally(() => setLoading(false));
   }, [token]);
 
   function handleAtualizada(atualizada) {
     setEntradas((prev) =>
-      prev.map((e) => (e.bib_id === atualizada.bib_id ? atualizada : e))
+      prev.map((e) => (e.bib_id === atualizada.bib_id ? atualizada : e)),
     );
   }
 
@@ -141,7 +157,12 @@ export default function BibliotecaPage() {
     setEntradaModal(null);
   }
 
-  // Muda o status direto pela badge (dropdown) — não passa pelo modal.
+  /**
+   * Troca o status direto pela badge do card, sem abrir o modal.
+   *
+   * @param {object} entrada Entrada da biblioteca.
+   * @param {string} novoStatus Novo status (planejado, jogando, finalizado ou abandonado).
+   */
   async function handleStatusChange(entrada, novoStatus) {
     setErroStatus(null);
     try {
@@ -150,12 +171,11 @@ export default function BibliotecaPage() {
       });
       handleAtualizada(atualizada);
     } catch (err) {
-      setErroStatus(
-        err instanceof ApiError ? err.message : "Não foi possível atualizar o status."
-      );
+      setErroStatus(mensagemErro(err, "Não foi possível atualizar o status."));
     }
   }
 
+  // Um jogo só aparece se passar por todos os filtros ativos.
   const entradasFiltradas = useMemo(() => {
     const termosGenero = genero
       .toLowerCase()
@@ -172,29 +192,31 @@ export default function BibliotecaPage() {
 
       if (avaliacoes.size > 0) {
         if (entrada.bib_usr_nota == null) return false;
+        // Converte a nota (0 a 10) para os 5 níveis do filtro.
         const estrelas = Math.round(entrada.bib_usr_nota / 2);
         if (!avaliacoes.has(estrelas)) return false;
       }
 
       if (classificacoes.size > 0) {
         if (!jogo?.jgs_classificacao_indicativa) return false;
-        if (!classificacoes.has(jogo.jgs_classificacao_indicativa)) return false;
+        if (!classificacoes.has(jogo.jgs_classificacao_indicativa))
+          return false;
       }
 
       if (tempoJogo.size > 0) {
         const horas = entrada.bib_jgs_horas_jogadas ?? 0;
         const bateAlgumaFaixa = OPCOES_TEMPO_JOGO.some(
-          (opcao) => tempoJogo.has(opcao.valor) && opcao.teste(horas)
+          (opcao) => tempoJogo.has(opcao.valor) && opcao.teste(horas),
         );
         if (!bateAlgumaFaixa) return false;
       }
 
       if (termosGenero.length > 0) {
         const generosDoJogo = (jogo?.generos ?? []).map((g) =>
-          g.gen_nome.toLowerCase()
+          g.gen_nome.toLowerCase(),
         );
         const bateAlgumTermo = termosGenero.some((termo) =>
-          generosDoJogo.some((g) => g.includes(termo))
+          generosDoJogo.some((g) => g.includes(termo)),
         );
         if (!bateAlgumTermo) return false;
       }
@@ -229,7 +251,6 @@ export default function BibliotecaPage() {
       <Header active="biblioteca" />
 
       <div className={styles.conteudo}>
-        {/* ---------- Sidebar de filtros ---------- */}
         <FiltroSidebar
           filtrosAtivos={filtrosAtivos}
           onLimparFiltros={limparTodosFiltros}
@@ -338,9 +359,10 @@ export default function BibliotecaPage() {
           ]}
         />
 
-        {/* ---------- Grade de jogos ---------- */}
         <div className={styles.grade}>
-          {loading && <p className={styles.info}>Carregando sua biblioteca...</p>}
+          {loading && (
+            <p className={styles.info}>Carregando sua biblioteca...</p>
+          )}
           {error && <p className={styles.erro}>{error}</p>}
           {erroStatus && <p className={styles.erro}>{erroStatus}</p>}
 
@@ -360,9 +382,12 @@ export default function BibliotecaPage() {
             </p>
           )}
 
-          {!loading && !error && entradas.length > 0 && entradasFiltradas.length === 0 && (
-            <p className={styles.info}>Nenhum jogo bate com esses filtros.</p>
-          )}
+          {!loading &&
+            !error &&
+            entradas.length > 0 &&
+            entradasFiltradas.length === 0 && (
+              <p className={styles.info}>Nenhum jogo bate com esses filtros.</p>
+            )}
 
           <div className={styles.grid}>
             {entradasFiltradas.map((entrada) => {
@@ -377,7 +402,6 @@ export default function BibliotecaPage() {
                       onClick={() => setEntradaModal(entrada)}
                       aria-label={`Editar nota e review de ${jogo?.jgs_titulo || "jogo"}`}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         className={styles.capa}
                         alt={jogo?.jgs_titulo || "Jogo"}
@@ -385,14 +409,15 @@ export default function BibliotecaPage() {
                       />
                     </button>
 
-                    {/* Badge de status — um <select> nativo estilizado
-                        pra parecer o badge colorido do Figma. Clicar
-                        nele já troca o status direto, sem abrir modal. */}
                     <select
                       className={styles.badge}
-                      style={{ backgroundColor: STATUS_COR[entrada.bib_status] }}
+                      style={{
+                        backgroundColor: STATUS_COR[entrada.bib_status],
+                      }}
                       value={entrada.bib_status}
-                      onChange={(e) => handleStatusChange(entrada, e.target.value)}
+                      onChange={(e) =>
+                        handleStatusChange(entrada, e.target.value)
+                      }
                       aria-label="Status na biblioteca"
                     >
                       {Object.entries(STATUS_LABEL).map(([valor, label]) => (
@@ -415,7 +440,9 @@ export default function BibliotecaPage() {
 
       {entradaModal && (
         <Modal
-          titulo={jogosPorId[entradaModal.bib_jgs_id]?.jgs_titulo || "Avaliação"}
+          titulo={
+            jogosPorId[entradaModal.bib_jgs_id]?.jgs_titulo || "Avaliação"
+          }
           onFechar={() => setEntradaModal(null)}
         >
           <EntradaBibliotecaForm

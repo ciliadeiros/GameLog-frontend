@@ -1,6 +1,4 @@
 .pagina {
-  /* Mesmo esquema do catálogo e da página de detalhes: fundo claro só
-     pra essa página (ver comentário em catalogo/page.module.css). */
   --color-bg: linear-gradient(180deg, #ededed 0%, #adacac 100%);
 
   min-height: 100vh;
@@ -17,17 +15,12 @@
   padding: 40px clamp(24px, 5vw, 70px) 0;
 }
 
-/* Sidebar de filtros: ver components/FiltroSidebar.module.css
-   (extraída daqui pra ser reaproveitada também em app/pesquisa). */
-
 .contagem {
   color: #4a4a4a;
   font-family: var(--font-base);
   font-size: 14px;
   margin-bottom: 16px;
 }
-
-/* ---------- Grade de jogos ---------- */
 
 .grade {
   flex: 1;
@@ -89,9 +82,6 @@
   background-color: #2a2a2a;
 }
 
-/* Badge de status — na verdade um <select> nativo. appearance:none
-   tira a seta padrão do navegador em todos os principais engines, daí
-   ele fica visualmente idêntico à badge do Figma até o usuário clicar. */
 .badge {
   position: absolute;
   right: 10px;

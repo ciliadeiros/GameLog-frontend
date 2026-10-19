@@ -1,7 +1,15 @@
+/** @fileoverview Lista de reviews públicas de um jogo (RF013). */
+
 "use client";
 
 import styles from "./ReviewsJogo.module.css";
 
+/**
+ * Converte uma data ISO para o formato brasileiro (dd/mm/aaaa).
+ *
+ * @param {string} [iso] Data em formato ISO.
+ * @returns {string|null} Data formatada, ou null se estiver vazia ou inválida.
+ */
 function formatarData(iso) {
   if (!iso) return null;
   const data = new Date(iso);
@@ -9,27 +17,29 @@ function formatarData(iso) {
   return data.toLocaleDateString("pt-BR");
 }
 
+/**
+ * Primeira letra do nome, em maiúscula, usada no avatar de quem não tem foto.
+ *
+ * @param {string} [nome] Nome do usuário.
+ * @returns {string} A letra, ou "?" se não houver nome.
+ */
 function iniciais(nome) {
   if (!nome) return "?";
   return nome.trim().charAt(0).toUpperCase();
 }
 
 /**
- * RF013 — reviews públicas de outros usuários pra este jogo, exibidas
- * na página de detalhes (app/jogo/[id]/page.jsx). Só leitura: não tem
- * formulário aqui, quem quiser avaliar continua fazendo isso pela
- * Biblioteca (RF010-012).
+ * Reviews dos outros usuários para o jogo, exibidas no fim da página de detalhes.
+ * É só leitura: quem quiser avaliar faz isso pela Biblioteca.
  *
- * As reviews agora vêm por prop (buscadas uma única vez em
- * app/jogo/[id]/page.jsx, via GET /games/rawg/{rawgId}/reviews) em vez
- * de cada componente buscar sozinho — a própria página já precisa
- * dessa mesma lista pra calcular a nota do GameLog (média em estrelas)
- * mostrada ao lado da imagem, então evitamos duas chamadas iguais.
+ * As reviews chegam por prop porque a página de detalhes já precisa delas para
+ * calcular a nota do GameLog, então elas são buscadas uma vez só.
  *
- * Props:
- * - reviews: array de reviews (já carregado)
- * - loading: true enquanto a página ainda está buscando
- * - erro: mensagem de erro, se a busca falhou
+ * @param {object} props
+ * @param {object[]} [props.reviews=[]] Reviews já carregadas.
+ * @param {boolean} [props.loading=false] true enquanto a página ainda busca.
+ * @param {string|null} [props.erro=null] Mensagem de erro, se a busca falhou.
+ * @returns {JSX.Element}
  */
 export function ReviewsJogo({ reviews = [], loading = false, erro = null }) {
   return (
@@ -43,8 +53,8 @@ export function ReviewsJogo({ reviews = [], loading = false, erro = null }) {
 
       {!loading && !erro && reviews.length === 0 && (
         <p className={styles.info}>
-          Esse jogo ainda não tem reviews. Adicione-o à sua biblioteca pra
-          ser o primeiro a avaliar.
+          Esse jogo ainda não tem reviews. Adicione-o à sua biblioteca pra ser o
+          primeiro a avaliar.
         </p>
       )}
 
@@ -55,7 +65,6 @@ export function ReviewsJogo({ reviews = [], loading = false, erro = null }) {
               <div className={styles.cabecalho}>
                 <div className={styles.avatarWrapper}>
                   {review.usuario?.usr_avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       className={styles.avatar}
                       src={review.usuario.usr_avatar_url}
@@ -81,7 +90,8 @@ export function ReviewsJogo({ reviews = [], loading = false, erro = null }) {
 
                 {review.bib_usr_nota != null && (
                   <span className={styles.nota}>
-                    {review.bib_usr_nota}/10 <span className={styles.estrela}>★</span>
+                    {review.bib_usr_nota}/10{" "}
+                    <span className={styles.estrela}>★</span>
                   </span>
                 )}
               </div>

@@ -1,3 +1,5 @@
+/** @fileoverview Tela de cadastro (/cadastro) — RF001. */
+
 "use client";
 
 import { useState } from "react";
@@ -5,10 +7,16 @@ import { useRouter } from "next/navigation";
 
 import { BotaoAuth } from "@/components/BotaoAuth";
 import { useAuth } from "@/context/AuthContext";
-import { ApiError } from "@/lib/api";
+import { mensagemErro } from "@/lib/api";
 
 import styles from "./page.module.css";
 
+/**
+ * Tela de cadastro. Cria a conta e já deixa o usuário logado, voltando para a
+ * página inicial.
+ *
+ * @returns {JSX.Element}
+ */
 export default function CadastroPage() {
   const router = useRouter();
   const { register } = useAuth();
@@ -46,11 +54,7 @@ export default function CadastroPage() {
 
       router.push("/");
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : "Não foi possível concluir o cadastro."
-      );
+      setError(mensagemErro(err, "Não foi possível concluir o cadastro."));
     } finally {
       setLoading(false);
     }
@@ -58,27 +62,17 @@ export default function CadastroPage() {
 
   return (
     <div className={styles["cadastro-de-usu"]}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         className={styles["img-game-catalog"]}
         alt=""
         src="/images/fundo.png"
       />
 
-      <form
-        className={styles["cadastro-form"]}
-        onSubmit={handleSubmit}
-      >
-        <h1 className={styles["cadastro-titulo"]}>
-          CADASTRE-SE
-        </h1>
+      <form className={styles["cadastro-form"]} onSubmit={handleSubmit}>
+        <h1 className={styles["cadastro-titulo"]}>CADASTRE-SE</h1>
 
-        {/* Nome completo */}
         <div className={styles["form-group"]}>
-          <label
-            className={styles["form-label"]}
-            htmlFor="nome"
-          >
+          <label className={styles["form-label"]} htmlFor="nome">
             Nome Completo:
           </label>
 
@@ -96,12 +90,8 @@ export default function CadastroPage() {
           </div>
         </div>
 
-        {/* Nome de usuário */}
         <div className={styles["form-group"]}>
-          <label
-            className={styles["form-label"]}
-            htmlFor="usuario"
-          >
+          <label className={styles["form-label"]} htmlFor="usuario">
             Nome de Usuário:
           </label>
 
@@ -119,12 +109,8 @@ export default function CadastroPage() {
           </div>
         </div>
 
-        {/* E-mail */}
         <div className={styles["form-group"]}>
-          <label
-            className={styles["form-label"]}
-            htmlFor="email"
-          >
+          <label className={styles["form-label"]} htmlFor="email">
             E-mail:
           </label>
 
@@ -142,12 +128,8 @@ export default function CadastroPage() {
           </div>
         </div>
 
-        {/* Senha */}
         <div className={styles["form-group"]}>
-          <label
-            className={styles["form-label"]}
-            htmlFor="senha"
-          >
+          <label className={styles["form-label"]} htmlFor="senha">
             Senha:
           </label>
 
@@ -167,10 +149,7 @@ export default function CadastroPage() {
         </div>
 
         {error && (
-          <p
-            role="alert"
-            className={styles.erro}
-          >
+          <p role="alert" className={styles.erro}>
             {error}
           </p>
         )}
@@ -182,15 +161,11 @@ export default function CadastroPage() {
           text={loading ? "Enviando..." : "CADASTRAR"}
         />
 
-        <a
-          href="/login"
-          className={styles.link}
-        >
+        <a href="/login" className={styles.link}>
           Já possui cadastro? Clique aqui e faça log in!
         </a>
       </form>
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         className={styles["logo-instance"]}
         alt="GameLog"

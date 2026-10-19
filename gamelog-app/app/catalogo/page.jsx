@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Catálogo de jogos (/catalogo) — RF003.
+ *
+ * Mostra um carrossel de destaques, categorias e uma grade de jogos. Tudo vem da
+ * RAWG, pelo back-end, sem precisar de jogos salvos no banco.
+ */
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -5,44 +12,59 @@ import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/context/AuthContext";
-import { listarRawg, ApiError } from "@/lib/api";
+import { listarRawg, mensagemErro } from "@/lib/api";
 import shared from "../styles/lista.module.css";
 import styles from "./page.module.css";
 
-// Categorias fixas mostradas no catálogo. Cada uma mapeia pra um filtro
-// da RAWG: "genero" usa o parâmetro "genres" e "tag" usa "tags" (a RAWG
-// não tem gênero "Terror" nem "Cooperativo" — só existem como tags).
-// Ver app/services/rawg_service.py::listar_jogos_rawg no back-end.
-// "imagem" é só a arte de fundo do card (não vem da RAWG).
+/**
+ * Categorias fixas do catálogo. Cada uma vira um filtro da RAWG: "genero" usa o
+ * parâmetro genres e "tag" usa tags (a RAWG não tem gênero "Terror" nem
+ * "Cooperativo", só tags). "imagem" é só a arte de fundo do card.
+ */
 const CATEGORIAS = [
-  { label: "Cooperativo", tag: "co-op", imagem: "/images/categorias/cooperativo.jpg" },
+  {
+    label: "Cooperativo",
+    tag: "co-op",
+    imagem: "/images/categorias/cooperativo.jpg",
+  },
   { label: "Ação", genero: "action", imagem: "/images/categorias/acao.jpg" },
   { label: "Indie", genero: "indie", imagem: "/images/categorias/indie.png" },
   { label: "Terror", tag: "horror", imagem: "/images/categorias/terror.jpg" },
-  { label: "RPG", genero: "role-playing-games-rpg", imagem: "/images/categorias/rpg.jpg" },
-  { label: "Plataforma", genero: "platformer", imagem: "/images/categorias/plataforma.jpg" },
+  {
+    label: "RPG",
+    genero: "role-playing-games-rpg",
+    imagem: "/images/categorias/rpg.jpg",
+  },
+  {
+    label: "Plataforma",
+    genero: "platformer",
+    imagem: "/images/categorias/plataforma.jpg",
+  },
 ];
 
-const PAGE_SIZE = 10; // 2 linhas de 5 na grade de "Populares"
-const PAGE_SIZE_DESTAQUES = 4; // itens do carrossel do topo
+/** Jogos na grade "Populares" (2 linhas de 5). */
+const PAGE_SIZE = 10;
+/** Jogos no carrossel de destaques. */
+const PAGE_SIZE_DESTAQUES = 4;
 
-function mensagemErro(err, fallback) {
-  return err instanceof ApiError ? err.message : fallback;
-}
-
+/**
+ * Página do catálogo. É uma rota protegida: sem sessão, redireciona para o login.
+ *
+ * A grade é recarregada sempre que o usuário escolhe (ou desmarca) uma categoria.
+ *
+ * @returns {JSX.Element|null}
+ */
 export default function CatalogoPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
-  // Rota protegida: manda pro login se não tiver sessão (mesmo padrão
-  // já usado em app/biblioteca/page.jsx).
+  // Rota protegida: sem sessão, manda o usuário para o login.
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
     }
   }, [authLoading, user, router]);
 
-  // ---------- Destaque (carrossel do topo) ----------
   const [destaques, setDestaques] = useState([]);
   const [destaqueIndex, setDestaqueIndex] = useState(0);
   const [destaqueErro, setDestaqueErro] = useState(null);
@@ -51,7 +73,9 @@ export default function CatalogoPage() {
     listarRawg({ aleatorio: true, pageSize: PAGE_SIZE_DESTAQUES })
       .then((data) => setDestaques(data?.results ?? []))
       .catch((err) =>
-        setDestaqueErro(mensagemErro(err, "Não foi possível carregar os destaques."))
+        setDestaqueErro(
+          mensagemErro(err, "Não foi possível carregar os destaques."),
+        ),
       );
   }, []);
 
@@ -67,10 +91,8 @@ export default function CatalogoPage() {
     setDestaqueIndex((i) => (i - 1 + destaques.length) % destaques.length);
   }
 
-  // ---------- Categoria ----------
   const [categoriaAtiva, setCategoriaAtiva] = useState(null);
 
-  // ---------- Grade principal de jogos ----------
   const [jogos, setJogos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -91,7 +113,8 @@ export default function CatalogoPage() {
         });
         if (!cancelado) setJogos(data?.results ?? []);
       } catch (err) {
-        if (!cancelado) setError(mensagemErro(err, "Não foi possível carregar o catálogo."));
+        if (!cancelado)
+          setError(mensagemErro(err, "Não foi possível carregar o catálogo."));
       } finally {
         if (!cancelado) setLoading(false);
       }
@@ -104,7 +127,9 @@ export default function CatalogoPage() {
   }, [categoriaAtiva]);
 
   function selecionarCategoria(categoria) {
-    setCategoriaAtiva((atual) => (atual?.label === categoria.label ? null : categoria));
+    setCategoriaAtiva((atual) =>
+      atual?.label === categoria.label ? null : categoria,
+    );
   }
 
   const tituloGrade = useMemo(() => {
@@ -118,10 +143,8 @@ export default function CatalogoPage() {
 
   return (
     <div className={styles.pagina}>
-      {/* ---------- Cabeçalho ---------- */}
       <Header active="catalogo" />
 
-      {/* ---------- Busca ---------- */}
       <div className={styles.buscaWrapper}>
         <NavLink href="/pesquisa" className={styles.buscaCaixa}>
           <span className={styles.buscaPlaceholder}>PESQUISAR JOGO</span>
@@ -131,7 +154,13 @@ export default function CatalogoPage() {
             fill="none"
             aria-hidden="true"
           >
-            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+            <circle
+              cx="11"
+              cy="11"
+              r="7"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
             <line
               x1="21"
               y1="21"
@@ -145,15 +174,10 @@ export default function CatalogoPage() {
         </NavLink>
       </div>
 
-      {/* ---------- Destaque / carrossel ---------- */}
       {destaqueErro && <p className={shared.erro}>{destaqueErro}</p>}
 
       {destaqueAtual && (
         <section className={styles.destaque}>
-          {/* O card inteiro (imagem de fundo + título + tags) é um link
-             só pro jogo em destaque — não só o título. As setas e as
-             bolinhas ficam por cima, como irmãs deste link (não
-             filhas), então clicar nelas não dispara a navegação. */}
           <NavLink
             href={`/jogo/${destaqueAtual.id}`}
             className={styles.destaqueLink}
@@ -212,7 +236,6 @@ export default function CatalogoPage() {
         </section>
       )}
 
-      {/* ---------- Categorias ---------- */}
       <div className={styles.categoriasHeader}>
         <a href="#categorias" className={styles.verMaisLink}>
           Ver mais categorias →
@@ -224,7 +247,9 @@ export default function CatalogoPage() {
             key={categoria.label}
             type="button"
             className={`${styles.categoriaCard} ${
-              categoriaAtiva?.label === categoria.label ? styles.categoriaAtiva : ""
+              categoriaAtiva?.label === categoria.label
+                ? styles.categoriaAtiva
+                : ""
             }`}
             style={{
               backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.05) 45%, rgba(0,0,0,0.8) 100%), url(${categoria.imagem})`,
@@ -236,24 +261,32 @@ export default function CatalogoPage() {
         ))}
       </div>
 
-      {/* ---------- Grade de jogos ---------- */}
       <div className={styles.gradeWrapper}>
         <div className={styles.gradeCabecalho}>
-          <h2 className={`${shared.titulo} ${styles.tituloEscuro}`}>{tituloGrade}</h2>
+          <h2 className={`${shared.titulo} ${styles.tituloEscuro}`}>
+            {tituloGrade}
+          </h2>
         </div>
 
         {loading && (
-          <p className={`${shared.info} ${styles.infoEscuro}`}>Carregando jogos...</p>
+          <p className={`${shared.info} ${styles.infoEscuro}`}>
+            Carregando jogos...
+          </p>
         )}
         {error && <p className={shared.erro}>{error}</p>}
         {!loading && !error && jogos.length === 0 && (
-          <p className={`${shared.info} ${styles.infoEscuro}`}>Nenhum jogo encontrado.</p>
+          <p className={`${shared.info} ${styles.infoEscuro}`}>
+            Nenhum jogo encontrado.
+          </p>
         )}
 
         <div className={`${shared.grid} ${styles.gradeFixa}`}>
           {jogos.map((jogo) => (
-            <NavLink key={jogo.id} href={`/jogo/${jogo.id}`} className={shared.card}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+            <NavLink
+              key={jogo.id}
+              href={`/jogo/${jogo.id}`}
+              className={shared.card}
+            >
               <img
                 className={`${shared.capa} ${styles.capaFixa}`}
                 alt={jogo.name}

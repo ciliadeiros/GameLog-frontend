@@ -1,13 +1,22 @@
+/** @fileoverview Link interno que avisa o app quando uma navegação começa. */
+
 "use client";
 
 import { useNavegacao } from "@/context/TransitionContext";
 
 /**
- * Igual a <Link> do next/navigation no visual e no href (funciona com
- * botão do meio, ctrl/cmd+clique, "abrir em nova aba" etc.), mas o
- * clique normal passa pela nossa TransitionProvider — é assim que o
- * app sabe que uma navegação está em andamento e pode mostrar o
- * LoadingOverlay se ela demorar.
+ * Link que se comporta como um <a> normal (botão do meio, ctrl/cmd + clique e
+ * "abrir em nova aba" continuam funcionando). A diferença é que o clique simples
+ * passa pelo TransitionProvider, e é assim que o app sabe que uma navegação está
+ * em andamento e pode mostrar o LoadingOverlay.
+ *
+ * @param {object} props
+ * @param {string} props.href Destino do link.
+ * @param {string} [props.className] Classe do link.
+ * @param {React.ReactNode} props.children Conteúdo do link.
+ * @param {function(Event): void} [props.onClick] Chamada antes da navegação.
+ * Props extras (target, aria-label...) vão direto para o <a>.
+ * @returns {JSX.Element}
  */
 export function NavLink({ href, className, children, onClick, ...props }) {
   const { navegar } = useNavegacao();

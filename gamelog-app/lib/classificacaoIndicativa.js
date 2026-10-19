@@ -1,12 +1,16 @@
-// Mapa aproximado de ESRB (o que a RAWG devolve) pro rótulo de
-// classificação indicativa brasileira (ClassInd), só para EXIBIÇÃO na
-// página de detalhes do jogo. Não é uma tradução oficial — ESRB e
-// ClassInd usam critérios diferentes — é a mesma aproximação já usada
-// no back-end (ver _ESRB_PARA_CLASSIND em
-// app/services/rawg_import_service.py), duplicada aqui porque
-// GET /games/rawg/{id} devolve o jogo cru da RAWG (esrb_rating), sem
-// passar pelo mapeamento que só acontece quando o jogo é importado
-// pra tb_jogos. Se o mapa do back-end mudar, replicar aqui também.
+/**
+ * @fileoverview Conversão da classificação etária da RAWG (ESRB) para a
+ * classificação indicativa brasileira (ClassInd).
+ *
+ * Serve só para exibir o selo na página de detalhes do jogo. A conversão é
+ * aproximada: ESRB e ClassInd usam critérios diferentes.
+ */
+
+/**
+ * Mapa de ESRB (o que a RAWG devolve) para a classificação brasileira. É o mesmo
+ * mapa do back-end (_ESRB_PARA_CLASSIND em rawg_import_service.py); se um mudar,
+ * o outro precisa mudar também.
+ */
 const ESRB_PARA_CLASSIND = {
   Everyone: "L",
   "Everyone 10+": "10",
@@ -15,10 +19,11 @@ const ESRB_PARA_CLASSIND = {
   "Adults Only": "18",
 };
 
-// Cores e rótulo oficiais do ClassInd L verde,
-// 10 azul, 12 amarelo, 14 laranja, 16 vermelho, 18 preto). "12" fica
-// aqui só por completude — a aproximação a partir do ESRB nunca gera
-// esse valor (a RAWG só tem 5 níveis de ESRB pros 6 do ClassInd).
+/**
+ * Rótulo e cores de cada classificação (L verde, 10 azul, 12 amarelo, 14 laranja,
+ * 16 vermelho, 18 preto). A faixa 12 existe só por completude: o ESRB nunca gera
+ * esse valor.
+ */
 export const CLASSIND_INFO = {
   L: { rotulo: "LIVRE", cor: "#2E9E3F", corTexto: "#ffffff" },
   10: { rotulo: "10 ANOS", cor: "#1976D2", corTexto: "#ffffff" },
@@ -28,10 +33,10 @@ export const CLASSIND_INFO = {
   18: { rotulo: "18 ANOS", cor: "#111111", corTexto: "#ffffff" },
 };
 
-// A RAWG não tem descritores de conteúdo ao estilo ClassInd (violência,
-// nudez etc.) — só tags soltas. Aproximamos a partir das tags mais
-// comuns, no mesmo espírito de MODOS_POR_TAG (app/jogo/[id]/page.jsx):
-// aproximação pra preencher o selo, não a classificação oficial.
+/**
+ * Descritores de conteúdo (Violência, Medo...) aproximados a partir das tags da
+ * RAWG, que não tem descritores como o ClassInd.
+ */
 const DESCRITOR_POR_TAG = {
   violent: "Violência",
   gore: "Violência",
@@ -46,9 +51,11 @@ const DESCRITOR_POR_TAG = {
 };
 
 /**
- * A partir do esrb_rating cru da RAWG (jogo.esrb_rating, formato
- * { id, name, slug }), devolve { chave, rotulo, cor, corTexto } pronto
- * pra exibir no selo, ou null se a RAWG não informou ESRB pra esse jogo.
+ * Converte o esrb_rating cru da RAWG no selo de classificação indicativa.
+ *
+ * @param {{name: string}|null|undefined} esrbRating Campo esrb_rating do jogo.
+ * @returns {{chave: string, rotulo: string, cor: string, corTexto: string}|null}
+ * Dados prontos para o selo, ou null se a RAWG não informou ESRB.
  */
 export function classindDoEsrb(esrbRating) {
   const chave = ESRB_PARA_CLASSIND[esrbRating?.name];
@@ -57,8 +64,11 @@ export function classindDoEsrb(esrbRating) {
 }
 
 /**
- * Descritores aproximados de conteúdo a partir das tags do jogo
- * (jogo.tags da RAWG). Só os primeiros 3, pra não estourar o selo.
+ * Monta os descritores de conteúdo a partir das tags do jogo (no máximo 3, para
+ * o selo não estourar).
+ *
+ * @param {{slug: string}[]} [tags] Tags do jogo na RAWG.
+ * @returns {string[]} Descritores sem repetição.
  */
 export function descritoresDeTags(tags) {
   const vistos = new Set();

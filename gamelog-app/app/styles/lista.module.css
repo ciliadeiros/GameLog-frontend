@@ -1,10 +1,3 @@
-/*
- * Estilos comuns às páginas de listagem de jogos (Catálogo e Biblioteca).
- * Eram idênticos, copiados e colados em cada page.module.css — agora
- * ficam num lugar só. Cada página continua com seu próprio
- * page.module.css só pro que é específico dela (botões, selects, etc.).
- */
-
 .pagina {
   min-height: 100vh;
   background-color: var(--color-bg);

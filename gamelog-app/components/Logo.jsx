@@ -1,22 +1,20 @@
+/** @fileoverview Logo do GameLog. */
+
 import styles from "./Logo.module.css";
 
 /**
- * Logo oficial do GameLog — usa o arquivo public/images/logo.png.
- * (O componente antes desenhava "GAME"/"LOG" em texto porque esse PNG
- * não tinha vindo no primeiro zip enviado; agora que ele está na
- * pasta public/images, a logo de verdade entra no lugar do texto.)
+ * Logo oficial do GameLog (public/images/logo.png).
+ *
+ * @param {object} props
+ * @param {string} [props.className] Classe extra para ajustar o tamanho.
+ * @returns {JSX.Element}
  */
 export function Logo({ className = "" }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
     <img
       src="/images/logo.png"
       alt="GameLog"
       className={`${styles.logo} ${className}`}
     />
   );
-}
-
-export function LogoGamelog({ className = "" }) {
-  return <Logo className={className} />;
 }

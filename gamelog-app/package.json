@@ -2,11 +2,14 @@
   "name": "gamelog-app",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "next": "16.3.4",
@@ -15,6 +18,7 @@
   },
   "devDependencies": {
     "eslint": "^9",
-    "eslint-config-next": "16.3.2"
+    "eslint-config-next": "16.3.2",
+    "prettier": "^3.9.10"
   }
 }

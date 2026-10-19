@@ -1,11 +1,20 @@
+/** @fileoverview Janela modal simples, sem dependências externas. */
+
 "use client";
 
 import { useEffect } from "react";
 import styles from "./Modal.module.css";
 
-// Modal simples: overlay escurecido + caixa centralizada. Fecha ao
-// clicar fora, ao apertar Esc, ou pelo botão "x". Sem dependência
-// nenhuma — só JSX + CSS.
+/**
+ * Modal com fundo escurecido e caixa centralizada. Fecha ao clicar fora, ao
+ * apertar Esc ou pelo botão "×".
+ *
+ * @param {object} props
+ * @param {string} props.titulo Título exibido no topo da caixa.
+ * @param {function(): void} props.onFechar Chamada quando o modal deve fechar.
+ * @param {React.ReactNode} props.children Conteúdo da caixa.
+ * @returns {JSX.Element}
+ */
 export function Modal({ titulo, onFechar, children }) {
   useEffect(() => {
     function handleEsc(e) {

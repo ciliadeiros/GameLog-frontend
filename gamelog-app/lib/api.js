@@ -1,6 +1,21 @@
+/**
+ * @fileoverview Cliente da API do GameLog.
+ *
+ * Todas as conversas com o back-end (FastAPI) passam por este arquivo. Cada
+ * rota tem uma função própria, então as páginas nunca precisam montar URL ou
+ * header na mão.
+ */
+
+/** Endereço do back-end. Usa NEXT_PUBLIC_API_URL e, se ela não existir, o servidor local. */
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+/** Erro lançado quando o back-end responde com falha (status fora de 2xx). */
 export class ApiError extends Error {
+  /**
+   * @param {string} message Mensagem pronta para mostrar ao usuário.
+   * @param {number} status Código HTTP da resposta (ex.: 401).
+   * @param {*} detail Conteúdo original do campo "detail" enviado pelo FastAPI.
+   */
   constructor(message, status, detail) {
     super(message);
     this.status = status;
@@ -9,14 +24,37 @@ export class ApiError extends Error {
 }
 
 /**
- * Wrapper genérico de fetch pro backend.
- * - Junta a base URL (NEXT_PUBLIC_API_URL) com o path.
- * - Se `token` for passado, manda o header Authorization: Bearer <token>
- *   (é assim que o back-end (app/core/dependencies_auth.py) espera).
- * - Se a resposta não for OK, lança ApiError com a mensagem que o FastAPI
- *   manda em `detail` (ex.: "Email ou senha inválidos").
+ * Escolhe a mensagem de erro que vai para a tela.
+ *
+ * @param {unknown} err Erro capturado.
+ * @param {string} fallback Mensagem usada quando o erro não vem da API.
+ * @returns {string} A mensagem do ApiError ou o texto padrão.
  */
-async function request(path, { method = "GET", body, token, isForm = false } = {}) {
+export function mensagemErro(err, fallback) {
+  return err instanceof ApiError ? err.message : fallback;
+}
+
+/**
+ * Faz a requisição ao back-end e devolve o JSON da resposta.
+ *
+ * Se receber um token, manda o header "Authorization: Bearer <token>". Se a
+ * resposta não for OK, lança um ApiError com a mensagem do campo "detail" do
+ * FastAPI (ex.: "Email ou senha inválidos").
+ *
+ * @param {string} path Caminho da rota, começando com "/" (ex.: "/games/").
+ * @param {object} [opcoes]
+ * @param {string} [opcoes.method="GET"] Método HTTP.
+ * @param {object|URLSearchParams} [opcoes.body] Corpo da requisição. Vai como JSON,
+ * a menos que isForm seja true.
+ * @param {string} [opcoes.token] Token JWT do usuário logado.
+ * @param {boolean} [opcoes.isForm=false] Se true, o corpo vai como formulário.
+ * @returns {Promise<*>} Dados da resposta, ou null se ela não for JSON.
+ * @throws {ApiError} Quando o status da resposta indica falha.
+ */
+async function request(
+  path,
+  { method = "GET", body, token, isForm = false } = {},
+) {
   const headers = {};
   if (!isForm) headers["Content-Type"] = "application/json";
   if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -35,15 +73,23 @@ async function request(path, { method = "GET", body, token, isForm = false } = {
     throw new ApiError(
       typeof detail === "string" ? detail : "Erro na requisição",
       res.status,
-      detail
+      detail,
     );
   }
 
   return data;
 }
 
-// ---------- Auth ----------
-// POST /auth/register espera JSON com esses campos (app/schemas/user.py)
+/**
+ * Cadastra um novo usuário (POST /auth/register).
+ *
+ * @param {object} dados
+ * @param {string} dados.nomeCompleto
+ * @param {string} dados.nomeUsuario
+ * @param {string} dados.email
+ * @param {string} dados.senha
+ * @returns {Promise<object>} Dados do usuário criado.
+ */
 export function registerUser({ nomeCompleto, nomeUsuario, email, senha }) {
   return request("/auth/register", {
     method: "POST",
@@ -56,9 +102,17 @@ export function registerUser({ nomeCompleto, nomeUsuario, email, senha }) {
   });
 }
 
-// POST /auth/login usa OAuth2PasswordRequestForm: espera
-// application/x-www-form-urlencoded com "username" e "password"
-// (username = e-mail, é o que o back-end usa pra autenticar)
+/**
+ * Faz login (POST /auth/login).
+ *
+ * O back-end usa o formulário padrão do OAuth2, por isso o corpo vai como
+ * formulário e o e-mail é enviado no campo "username".
+ *
+ * @param {object} dados
+ * @param {string} dados.email
+ * @param {string} dados.senha
+ * @returns {Promise<{access_token: string}>} Token JWT da sessão.
+ */
 export function loginUser({ email, senha }) {
   const body = new URLSearchParams();
   body.set("username", email);
@@ -71,33 +125,66 @@ export function loginUser({ email, senha }) {
   });
 }
 
+/**
+ * Busca os dados do usuário logado (GET /auth/me).
+ *
+ * @param {string} token Token JWT.
+ * @returns {Promise<object>} Usuário logado.
+ */
 export function getMe(token) {
   return request("/auth/me", { token });
 }
 
-// ---------- Games ----------
+/** Lista os jogos que já estão salvos no banco do GameLog (GET /games/). */
 export function listGames() {
   return request("/games/");
 }
 
+/**
+ * Busca um jogo do banco do GameLog pelo id local (GET /games/{id}).
+ *
+ * @param {number|string} id Id do jogo no banco local.
+ */
 export function getGame(id) {
   return request(`/games/${id}`);
 }
 
-// GET /games/rawg/{id} — detalhes completos de um jogo direto da RAWG.
-// Alimenta a página de detalhes do jogo (app/jogo/[id]).
+/**
+ * Busca os detalhes completos de um jogo direto na RAWG (GET /games/rawg/{id}).
+ * É o que alimenta a página de detalhes do jogo.
+ *
+ * @param {number|string} rawgId Id do jogo na RAWG.
+ */
 export function getGameDetailsRawg(rawgId) {
   return request(`/games/rawg/${rawgId}`);
 }
 
-// POST /games/rawg/{id}/importar-um — garante que o jogo exista em
-// tb_jogos (cria se ainda não existir) e devolve o registro local, já
-// com jgs_id. É o passo que roda antes de POST /library, porque a
-// biblioteca só aceita o id local, não o id da RAWG.
+/**
+ * Garante que o jogo da RAWG exista no banco do GameLog (cria se ainda não
+ * existir) e devolve o registro local, já com jgs_id.
+ * (POST /games/rawg/{id}/importar-um)
+ *
+ * Precisa rodar antes de adicionar à biblioteca, que só aceita o id local.
+ *
+ * @param {string} token Token JWT.
+ * @param {number|string} rawgId Id do jogo na RAWG.
+ * @returns {Promise<object>} Jogo salvo no banco local.
+ */
 export function importarUmJogoRawg(token, rawgId) {
-  return request(`/games/rawg/${rawgId}/importar-um`, { method: "POST", token });
+  return request(`/games/rawg/${rawgId}/importar-um`, {
+    method: "POST",
+    token,
+  });
 }
 
+/**
+ * Pesquisa jogos na RAWG pelo nome (GET /games/rawg/search).
+ *
+ * @param {object} filtros
+ * @param {string} filtros.nome Texto da busca.
+ * @param {number} [filtros.page=1] Página dos resultados.
+ * @param {number} [filtros.pageSize=10] Jogos por página.
+ */
 export function searchRawg({ nome, page = 1, pageSize = 10 }) {
   const params = new URLSearchParams({
     nome,
@@ -107,19 +194,24 @@ export function searchRawg({ nome, page = 1, pageSize = 10 }) {
   return request(`/games/rawg/search?${params}`);
 }
 
-// GET /games/rawg/lista — lista jogos direto da RAWG (sem exigir nome
-// e sem gravar nada no banco). Usada pelo catálogo: destaques,
-// categorias e busca, todos com essa mesma função, só mudando os
-// filtros. Todos os parâmetros são opcionais.
-//
-// IMPORTANTE sobre "ordering": só manda esse parâmetro quando for
-// passado explicitamente. Quando tem "nome" (busca por texto) e a
-// gente força "ordering=-rating", a RAWG ordena por nota em vez de
-// relevância — é por isso que buscar "Counter-Strike 2", por exemplo,
-// não trazia o jogo certo (ele existe, só não tem nota alta o
-// suficiente pra aparecer nas 18 primeiras posições ordenadas por
-// rating). Sem "ordering", a RAWG ordena por relevância quando há
-// "search", que é o comportamento certo pra busca.
+/**
+ * Lista jogos direto da RAWG, sem gravar nada no banco (GET /games/rawg/lista).
+ * O catálogo e a pesquisa usam esta mesma função, só mudando os filtros.
+ *
+ * @param {object} [filtros] Todos os filtros são opcionais.
+ * @param {string} [filtros.nome] Texto da busca.
+ * @param {string} [filtros.genero] Slug(s) de gênero da RAWG, separados por vírgula.
+ * @param {string} [filtros.tag] Slug(s) de tag da RAWG, separados por vírgula.
+ * @param {string} [filtros.ordering] Ordenação da RAWG (ex.: "-rating"). Só é enviada
+ * se for informada: forçar a ordem por nota numa busca por nome tira a
+ * relevância dos resultados.
+ * @param {boolean} [filtros.aleatorio] Pede uma amostra sorteada de jogos populares
+ * (o back-end ignora isso quando há "nome").
+ * @param {number} [filtros.page=1] Página dos resultados.
+ * @param {number} [filtros.pageSize=20] Jogos por página.
+ * @returns {Promise<{results: object[], next: (string|null)}>} Página de jogos no
+ * formato da RAWG.
+ */
 export function listarRawg({
   nome,
   genero,
@@ -142,34 +234,67 @@ export function listarRawg({
   return request(`/games/rawg/lista?${params}`);
 }
 
-// ---------- Library (biblioteca do usuário logado) ----------
+/**
+ * Lista a biblioteca do usuário logado (GET /library/).
+ *
+ * @param {string} token Token JWT.
+ */
 export function listLibrary(token) {
   return request("/library/", { token });
 }
 
+/**
+ * Adiciona um jogo à biblioteca do usuário (POST /library/).
+ *
+ * @param {string} token Token JWT.
+ * @param {object} dados Precisa de bib_status e bib_jgs_id (id local do jogo).
+ */
 export function addToLibrary(token, dados) {
   return request("/library/", { method: "POST", body: dados, token });
 }
 
+/**
+ * Atualiza uma entrada da biblioteca: status, nota, review ou horas
+ * (PUT /library/{id}).
+ *
+ * @param {string} token Token JWT.
+ * @param {number} id Id da entrada (bib_id).
+ * @param {object} dados Só os campos que serão alterados.
+ */
 export function updateLibraryEntry(token, id, dados) {
   return request(`/library/${id}`, { method: "PUT", body: dados, token });
 }
 
+/**
+ * Remove uma entrada da biblioteca (DELETE /library/{id}).
+ *
+ * @param {string} token Token JWT.
+ * @param {number} id Id da entrada (bib_id).
+ */
 export function removeFromLibrary(token, id) {
   return request(`/library/${id}`, { method: "DELETE", token });
 }
 
-// GET /games/rawg/{id}/minha-biblioteca — diz se ESTE usuário já tem
-// esse jogo (da RAWG) na biblioteca dele, e devolve a entrada se tiver
-// (senão devolve null). Usada na página de detalhes pra decidir entre
-// mostrar "Adicionar à Biblioteca" ou o formulário de nota/review/horas.
+/**
+ * Diz se o usuário já tem este jogo da RAWG na biblioteca
+ * (GET /games/rawg/{id}/minha-biblioteca).
+ *
+ * @param {string} token Token JWT.
+ * @param {number|string} rawgId Id do jogo na RAWG.
+ * @returns {Promise<object|null>} A entrada da biblioteca, ou null se o jogo não
+ * estiver nela.
+ */
 export function getMinhaEntradaBiblioteca(token, rawgId) {
   return request(`/games/rawg/${rawgId}/minha-biblioteca`, { token });
 }
 
-// GET /games/rawg/{id}/reviews — reviews públicas (nota + texto) de
-// outros usuários pra esse jogo (RF013). Rota pública, sem token: se
-// o jogo nunca foi importado localmente, a API já devolve [].
+/**
+ * Busca as reviews públicas (nota e texto) dos outros usuários para um jogo
+ * (GET /games/rawg/{id}/reviews, RF013). Não precisa de token.
+ *
+ * @param {number|string} rawgId Id do jogo na RAWG.
+ * @returns {Promise<object[]>} Lista de reviews (vazia se ninguém avaliou).
+ */
 export function getReviewsRawg(rawgId) {
   return request(`/games/rawg/${rawgId}/reviews`);
 }

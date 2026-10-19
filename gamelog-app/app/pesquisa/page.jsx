@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Pesquisa de jogos (/pesquisa).
+ *
+ * Busca por texto (aceita ?q= na URL) e filtros de gênero, modo, avaliação e
+ * classificação indicativa.
+ */
+
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
@@ -6,16 +13,17 @@ import { Header } from "@/components/Header";
 import { NavLink } from "@/components/NavLink";
 import { useConjuntoFiltro } from "@/components/FiltroSidebar";
 import { useAuth } from "@/context/AuthContext";
-import { listarRawg, ApiError } from "@/lib/api";
+import { listarRawg, mensagemErro } from "@/lib/api";
 import shared from "../styles/lista.module.css";
 import styles from "./page.module.css";
 
+/** Quantidade de jogos por página de resultados. */
 const PAGE_SIZE = 20;
 
-// Gêneros do protótipo (Figma). "Terror" não existe como gênero na
-// RAWG — só como tag ("horror"), igual já é tratado em
-// app/catalogo/page.jsx (CATEGORIAS, categoria "Terror"). Os demais
-// mapeiam direto pro slug de gênero da RAWG.
+/**
+ * Opções do filtro de gênero. "genero" é o slug de gênero da RAWG; "Terror" usa
+ * "tag" porque na RAWG ele só existe como tag.
+ */
 const OPCOES_GENERO = [
   { valor: "acao", label: "Ação", genero: "action" },
   { valor: "aventura", label: "Aventura", genero: "adventure" },
@@ -25,28 +33,26 @@ const OPCOES_GENERO = [
   { valor: "simulacao", label: "Simulação", genero: "simulation" },
 ];
 
-// A RAWG não tem campo de "modo de jogo" — aproximado pelas mesmas
-// tags já usadas em app/jogo/[id]/page.jsx (MODOS_POR_TAG). "Duo" do
-// protótipo não é um conceito da RAWG; tratei como sinônimo de
-// cooperativo (tag "co-op"), igual à categoria "Cooperativo" do
-// catálogo — não distingue duo de co-op com mais gente.
+/**
+ * Opções do filtro de modo, aproximadas pelas tags da RAWG (que não tem um campo
+ * de modo de jogo). "Duo" é tratado como cooperativo (tag co-op).
+ */
 const OPCOES_MODO = [
   { valor: "multiplayer", label: "Multi Player", tag: "multiplayer" },
   { valor: "singleplayer", label: "Single Player", tag: "singleplayer" },
   { valor: "duo", label: "Duo", tag: "co-op" },
 ];
 
-// RAWG traz "rating" de 0 a 5 (float) — bate direto com os 5 níveis do
-// protótipo, sem precisar de conversão (diferente da nota de 0 a 10 da
-// Biblioteca, que precisa dividir por 2 pra virar "estrelas").
+/**
+ * Níveis do filtro de avaliação. O rating da RAWG já vai de 0 a 5, então não
+ * precisa converter.
+ */
 const OPCOES_AVALIACAO = [1, 2, 3, 4, 5];
 
-// Mesma aproximação ESRB → Classificação Indicativa usada no back-end
-// (app/services/rawg_import_service.py::_ESRB_PARA_CLASSIND), replicada
-// aqui porque a pesquisa usa os dados crus da RAWG (jogo.esrb_rating),
-// não o campo já convertido — esse só existe pros jogos que já foram
-// importados pro banco local (ver comentário lá pra mais detalhes,
-// inclusive por que "12 anos" nunca bate com nada por essa aproximação).
+/**
+ * Converte o ESRB da RAWG para a classificação indicativa brasileira (aproximação,
+ * a mesma do back-end). Fica aqui porque a pesquisa usa os dados crus da RAWG.
+ */
 const ESRB_PARA_CLASSIND = {
   Everyone: "Livre",
   "Everyone 10+": "10",
@@ -55,6 +61,7 @@ const ESRB_PARA_CLASSIND = {
   "Adults Only": "+18",
 };
 
+/** Opções do filtro de classificação indicativa. */
 const OPCOES_CLASSIFICACAO = [
   { valor: "Livre", label: "Livre" },
   { valor: "10", label: "10 anos" },
@@ -64,10 +71,14 @@ const OPCOES_CLASSIFICACAO = [
   { valor: "+18", label: "18 anos" },
 ];
 
-function mensagemErro(err, fallback) {
-  return err instanceof ApiError ? err.message : fallback;
-}
-
+/**
+ * Grupo de filtros com título (ex.: GÊNERO).
+ *
+ * @param {object} props
+ * @param {string} props.title Título do grupo.
+ * @param {React.ReactNode} props.children Opções do grupo.
+ * @returns {JSX.Element}
+ */
 function FilterGroup({ title, children }) {
   return (
     <section className={styles.filterGroup}>
@@ -77,6 +88,15 @@ function FilterGroup({ title, children }) {
   );
 }
 
+/**
+ * Checkbox de uma opção de filtro.
+ *
+ * @param {object} props
+ * @param {string} props.label Texto da opção.
+ * @param {boolean} props.checked Se está marcada.
+ * @param {function(): void} props.onChange Chamada ao marcar/desmarcar.
+ * @returns {JSX.Element}
+ */
 function FilterOption({ label, checked, onChange }) {
   return (
     <label className={styles.filterOption}>
@@ -86,30 +106,42 @@ function FilterOption({ label, checked, onChange }) {
   );
 }
 
+/**
+ * Conteúdo da página de pesquisa. É uma rota protegida: sem sessão, redireciona
+ * para o login.
+ *
+ * Texto e filtros de gênero/modo são enviados ao back-end, que refaz a busca.
+ * Avaliação e classificação filtram só no front, sobre os resultados já
+ * carregados, então não disparam uma nova busca.
+ *
+ * @returns {JSX.Element|null}
+ */
 function PesquisaConteudo() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
 
-  // Rota protegida, mesmo padrão do catálogo/biblioteca/detalhes do jogo.
+  // Rota protegida: sem sessão, manda o usuário para o login.
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
     }
   }, [authLoading, user, router]);
 
-  // ---------- Busca por texto (aceita ?q= vindo do catálogo) ----------
   const [termoBusca, setTermoBusca] = useState(searchParams.get("q") ?? "");
-  const [buscaDebounced, setBuscaDebounced] = useState(searchParams.get("q") ?? "");
+  const [buscaDebounced, setBuscaDebounced] = useState(
+    searchParams.get("q") ?? "",
+  );
 
   useEffect(() => {
+    // Espera 400 ms sem digitar antes de buscar, para não chamar a API a cada letra.
     const id = setTimeout(() => setBuscaDebounced(termoBusca.trim()), 400);
     return () => clearTimeout(id);
   }, [termoBusca]);
 
-  // Mantém a URL em sincronia com a busca (troca sem empilhar
-  // histórico), pra dar pra copiar/compartilhar o link já com o termo.
   useEffect(() => {
+    // Mantém a URL em sincronia com a busca, sem empilhar histórico, para o link
+    // poder ser compartilhado já com o termo.
     const params = new URLSearchParams(searchParams.toString());
     if (buscaDebounced) {
       params.set("q", buscaDebounced);
@@ -117,18 +149,23 @@ function PesquisaConteudo() {
       params.delete("q");
     }
     const query = params.toString();
-    router.replace(query ? `/pesquisa?${query}` : "/pesquisa", { scroll: false });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    router.replace(query ? `/pesquisa?${query}` : "/pesquisa", {
+      scroll: false,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só deve rodar quando o termo da busca muda
   }, [buscaDebounced]);
 
-  // ---------- Filtros ----------
   const [generos, toggleGenero, limparGeneros] = useConjuntoFiltro();
   const [modos, toggleModo, limparModos] = useConjuntoFiltro();
   const [avaliacoes, toggleAvaliacao, limparAvaliacoes] = useConjuntoFiltro();
-  const [classificacoes, toggleClassificacao, limparClassificacoes] = useConjuntoFiltro();
+  const [classificacoes, toggleClassificacao, limparClassificacoes] =
+    useConjuntoFiltro();
 
   const filtrosAtivos =
-    generos.size > 0 || modos.size > 0 || avaliacoes.size > 0 || classificacoes.size > 0;
+    generos.size > 0 ||
+    modos.size > 0 ||
+    avaliacoes.size > 0 ||
+    classificacoes.size > 0;
 
   function limparTodosFiltros() {
     limparGeneros();
@@ -137,31 +174,28 @@ function PesquisaConteudo() {
     limparClassificacoes();
   }
 
-  // "Gênero" pode virar dois parâmetros diferentes na RAWG: os gêneros
-  // de verdade (genres) e, no caso de "Terror", uma tag — mesma
-  // limitação que o catálogo já tem com sua categoria "Terror".
   const generoParam = useMemo(
     () =>
       OPCOES_GENERO.filter((o) => generos.has(o.valor) && o.genero)
         .map((o) => o.genero)
         .join(",") || undefined,
-    [generos]
+    [generos],
   );
 
+  // Terror (tag de gênero) e modos de jogo caem no mesmo parâmetro "tags" da RAWG.
+  // Se os dois forem marcados juntos, a RAWG trata como OU (e não E).
   const tagParam = useMemo(() => {
-    const tagsDoGenero = OPCOES_GENERO.filter((o) => generos.has(o.valor) && o.tag).map(
-      (o) => o.tag
+    const tagsDoGenero = OPCOES_GENERO.filter(
+      (o) => generos.has(o.valor) && o.tag,
+    ).map((o) => o.tag);
+    const tagsDoModo = OPCOES_MODO.filter((o) => modos.has(o.valor)).map(
+      (o) => o.tag,
     );
-    const tagsDoModo = OPCOES_MODO.filter((o) => modos.has(o.valor)).map((o) => o.tag);
     const todas = [...tagsDoGenero, ...tagsDoModo];
-    // Nota: se "Terror" e algum Modo forem marcados juntos, os dois
-    // caem no mesmo parâmetro "tags" da RAWG e viram OU entre si (em
-    // vez de E) — combinação rara, documentando aqui em vez de
-    // resolver com uma segunda chamada só pra esse caso.
+
     return todas.length > 0 ? todas.join(",") : undefined;
   }, [generos, modos]);
 
-  // ---------- Resultados ----------
   const [jogos, setJogos] = useState([]);
   const [pagina, setPagina] = useState(1);
   const [temMais, setTemMais] = useState(false);
@@ -169,10 +203,6 @@ function PesquisaConteudo() {
   const [carregandoMais, setCarregandoMais] = useState(false);
   const [error, setError] = useState(null);
 
-  // Recarrega do zero sempre que a busca ou os filtros que vão pro
-  // servidor (gênero/modo) mudam. Avaliação e Classificação filtram só
-  // no cliente (ver `jogosFiltrados` abaixo, mesmo espírito dos
-  // filtros da Biblioteca), então não precisam disparar um novo fetch.
   useEffect(() => {
     let cancelado = false;
 
@@ -208,6 +238,7 @@ function PesquisaConteudo() {
     };
   }, [buscaDebounced, generoParam, tagParam]);
 
+  /** Busca a próxima página e junta com os resultados que já estão na tela. */
   async function carregarMais() {
     setCarregandoMais(true);
     try {
@@ -263,7 +294,12 @@ function PesquisaConteudo() {
               value={termoBusca}
               onChange={(e) => setTermoBusca(e.target.value)}
             />
-            <svg className={styles.buscaIcone} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <svg
+              className={styles.buscaIcone}
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
               <path
                 d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
                 stroke="#1E1E1E"
@@ -322,14 +358,20 @@ function PesquisaConteudo() {
             </FilterGroup>
 
             {filtrosAtivos && (
-              <button type="button" className={styles.limparFiltros} onClick={limparTodosFiltros}>
+              <button
+                type="button"
+                className={styles.limparFiltros}
+                onClick={limparTodosFiltros}
+              >
                 Limpar filtros
               </button>
             )}
           </aside>
 
           <section className={styles.resultados}>
-            {loading && <p className={styles.infoEscuro}>Procurando jogos...</p>}
+            {loading && (
+              <p className={styles.infoEscuro}>Procurando jogos...</p>
+            )}
             {error && <p className={shared.erro}>{error}</p>}
 
             {!loading && !error && jogosFiltrados.length === 0 && (
@@ -343,7 +385,11 @@ function PesquisaConteudo() {
             {!loading && !error && jogosFiltrados.length > 0 && (
               <div className={styles.grid}>
                 {jogosFiltrados.map((jogo) => (
-                  <NavLink key={jogo.id} href={`/jogo/${jogo.id}`} className={styles.card}>
+                  <NavLink
+                    key={jogo.id}
+                    href={`/jogo/${jogo.id}`}
+                    className={styles.card}
+                  >
                     <img
                       className={styles.capa}
                       alt={jogo.name}
@@ -372,10 +418,14 @@ function PesquisaConteudo() {
   );
 }
 
+/**
+ * Página de pesquisa. O useSearchParams precisa de um <Suspense> em volta (senão
+ * o build do Next reclama), então a lógica fica em PesquisaConteudo e este
+ * componente só cuida do Suspense.
+ *
+ * @returns {JSX.Element}
+ */
 export default function PesquisaPage() {
-  // useSearchParams precisa de um Suspense boundary em volta (senão o
-  // Next reclama no build) — por isso a lógica de verdade fica isolada
-  // em PesquisaConteudo, e esse componente só cuida do Suspense.
   return (
     <Suspense fallback={null}>
       <PesquisaConteudo />

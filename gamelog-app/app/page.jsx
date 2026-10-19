@@ -1,15 +1,22 @@
+/** @fileoverview Página inicial (/). */
+
 "use client";
 
 import { BotaoAuth } from "@/components/BotaoAuth";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./page.module.css";
 
+/**
+ * Página inicial. Quem está logado vê uma saudação e os botões de Catálogo,
+ * Minha Biblioteca e Sair; quem não está vê os botões de login e cadastro.
+ *
+ * @returns {JSX.Element}
+ */
 export default function Home() {
   const { user, loading, logout } = useAuth();
 
   return (
     <div className={styles["pgina-inicial"]}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         className={styles["imagem-de-fundo"]}
         alt="Imagem de fundo"
@@ -18,7 +25,6 @@ export default function Home() {
       <div className={styles["gradiente-preto"]} />
 
       <div className={styles.logo}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           className={styles["logo-gamelog-1"]}
           alt="GameLog"
@@ -67,7 +73,7 @@ export default function Home() {
       <div className={styles.imagens}>
         <div className={styles.img}>
           <div className={styles["text-wrapper"]}>Explore o catálogo</div>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+
           <img
             className={styles["img-2"]}
             alt="Explorar exemplo"
@@ -76,7 +82,7 @@ export default function Home() {
         </div>
         <div className={styles.img}>
           <div className={styles.div}>Organize sua biblioteca!</div>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+
           <img
             className={styles["img-2"]}
             alt="Biblioteca exemplo"
@@ -85,7 +91,7 @@ export default function Home() {
         </div>
         <div className={styles.img}>
           <p className={styles.p}>Veja os detalhes sobre o jogo</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+
           <img
             className={styles["biblioteca-exemplo"]}
             alt="Detalhes exemplo"

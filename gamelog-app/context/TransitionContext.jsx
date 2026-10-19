@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Contexto das transições de página.
+ *
+ * Toda navegação interna passa por aqui, então qualquer componente consegue
+ * saber se existe uma troca de página em andamento. O LoadingOverlay usa isso
+ * para decidir quando aparecer.
+ */
+
 "use client";
 
 import {
@@ -10,19 +18,22 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
+/** Contexto interno. Quem consome usa o hook useNavegacao. */
 const TransitionContext = createContext(null);
 
-// Só mostra a telinha de carregamento se a troca de página demorar mais
-// que isso. Navegações instantâneas (rota já carregada, dado em cache)
-// não chegam a acionar o overlay — evita o "flash" chato de uma
-// animação que aparece e some em 40ms.
+/**
+ * Tempo mínimo (em ms) de espera antes de mostrar a tela de carregamento.
+ * Navegações rápidas não chegam a acionar o overlay, o que evita um "flash".
+ */
 const ATRASO_PARA_MOSTRAR_MS = 200;
 
 /**
- * Envolve toda navegação interna (NavLink, ou navegar() chamado direto)
- * num useTransition, então dá pra saber, em qualquer lugar da árvore,
- * se tem uma troca de página em andamento — é o que o LoadingOverlay
- * usa pra decidir quando aparecer.
+ * Provedor das transições. Envolve a navegação em um useTransition e controla
+ * quando o overlay de carregamento deve aparecer.
+ *
+ * @param {object} props
+ * @param {React.ReactNode} props.children
+ * @returns {JSX.Element}
  */
 export function TransitionProvider({ children }) {
   const router = useRouter();
@@ -34,16 +45,14 @@ export function TransitionProvider({ children }) {
     if (isPending) {
       timeoutRef.current = setTimeout(
         () => setMostrarOverlay(true),
-        ATRASO_PARA_MOSTRAR_MS
+        ATRASO_PARA_MOSTRAR_MS,
       );
       return () => clearTimeout(timeoutRef.current);
     }
 
-    // isPending virou false: cancela o timer de "mostrar" (se ainda
-    // não tiver disparado) e esconde a telinha. O setState acontece
-    // dentro do callback do setTimeout (não direto no corpo do efeito)
-    // pra não disparar o aviso de "cascading renders" do React.
     clearTimeout(timeoutRef.current);
+    // O setState fica dentro de um setTimeout (e não direto no efeito) para não
+    // causar renderizações em cascata.
     const id = setTimeout(() => setMostrarOverlay(false), 0);
     return () => clearTimeout(id);
   }, [isPending]);
@@ -61,10 +70,20 @@ export function TransitionProvider({ children }) {
   );
 }
 
+/**
+ * Acessa o controle de navegação. Só funciona dentro de um <TransitionProvider>.
+ *
+ * @returns {{navegar: function(string): void, isPending: boolean,
+ * mostrarOverlay: boolean}} navegar(href) troca de página; mostrarOverlay diz se a
+ * tela de carregamento deve estar visível.
+ * @throws {Error} Se for usado fora do <TransitionProvider>.
+ */
 export function useNavegacao() {
   const ctx = useContext(TransitionContext);
   if (!ctx) {
-    throw new Error("useNavegacao precisa estar dentro de <TransitionProvider>");
+    throw new Error(
+      "useNavegacao precisa estar dentro de <TransitionProvider>",
+    );
   }
   return ctx;
 }

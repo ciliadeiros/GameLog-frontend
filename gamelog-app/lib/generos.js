@@ -1,9 +1,9 @@
-// Tabela associativa pra traduzir os gêneros da RAWG (sempre em
-// inglês) pro português, já que o GameLog é um projeto pro Brasil. A
-// chave é o "slug" que a RAWG devolve em cada gênero (jogo.genres[].slug),
-// não o "name" (evita depender de como a RAWG escreve o nome em inglês).
-// Cobre os gêneros padrão da RAWG; um gênero fora dessa lista cai no
-// fallback (nome original da RAWG) em vez de sumir da tela.
+/** @fileoverview Tradução dos gêneros da RAWG (sempre em inglês) para português. */
+
+/**
+ * Gêneros traduzidos, indexados pelo "slug" da RAWG (e não pelo nome, que pode
+ * variar). Gênero fora da lista cai no nome original em vez de sumir da tela.
+ */
 const GENEROS_PT = {
   action: "Ação",
   indie: "Indie",
@@ -27,9 +27,10 @@ const GENEROS_PT = {
 };
 
 /**
- * Traduz um gênero da RAWG ({ id, name, slug }) pro português. Sem
- * correspondência na tabela, devolve o "name" original da RAWG (em
- * inglês) em vez de esconder o gênero.
+ * Traduz um gênero da RAWG para português.
+ *
+ * @param {{name: string, slug: string}} genero Gênero no formato da RAWG.
+ * @returns {string} Nome em português, ou o nome original se não houver tradução.
  */
 export function traduzirGenero(genero) {
   return GENEROS_PT[genero?.slug] ?? genero?.name;

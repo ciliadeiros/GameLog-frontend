@@ -1,18 +1,4 @@
 .pagina {
-  /*
-   * Essa página fica com fundo claro (diferente do resto do site, que
-   * é escuro). Só sobrescrevo --color-bg e as variáveis do campo de
-   * busca aqui dentro de .pagina — como são variáveis CSS, o valor
-   * novo cai em cascata pra tudo que tiver dentro dela (inclusive as
-   * classes que vêm de lista.module.css), sem mexer no base.css nem
-   * afetar as outras páginas (login, cadastro, biblioteca etc.).
-   * --color-white e --color-gray-text eu NÃO mexo aqui: são usadas
-   * tanto por texto que fica direto no fundo claro quanto por texto
-   * dentro dos cards escuros (cabeçalho, cards do catálogo), então
-   * pra esses casos específicos uso cor fixa (.tituloEscuro/.infoEscuro
-   * mais abaixo) em vez de remapear a variável pra não quebrar um dos
-   * dois lugares.
-   */
   --color-bg: #f2f2f2;
   --color-input-bg: #ffffff;
   --color-input-placeholder: #7a7a7a;
@@ -21,8 +7,6 @@
   background-color: var(--color-bg);
   padding-bottom: 80px;
 }
-
-/* ---------- Busca ---------- */
 
 .buscaWrapper {
   display: flex;
@@ -46,7 +30,9 @@
   letter-spacing: 0.04em;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
 
 .buscaCaixa:hover {
@@ -74,8 +60,6 @@
   pointer-events: none;
 }
 
-/* ---------- Destaque / carrossel ---------- */
-
 .destaque {
   position: relative;
   margin-top: 24px;
@@ -83,10 +67,6 @@
   overflow: hidden;
 }
 
-/* O link cobre o card inteiro — é nele que a imagem de fundo entra
-   agora (antes ficava em .destaque). Setas e bolinhas são posicionadas
-   por cima, fora deste link (ver JSX: são elementos irmãos), então
-   continuam clicáveis sem disparar a navegação do card. */
 .destaqueLink {
   position: absolute;
   inset: 0;
@@ -164,8 +144,6 @@
   background-color: var(--color-white);
 }
 
-/* ---------- Bolinhas do carrossel ---------- */
-
 .destaqueBolinhas {
   position: absolute;
   left: 50%;
@@ -185,7 +163,9 @@
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.45);
   cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .bolinha:hover {
@@ -196,8 +176,6 @@
   background-color: var(--color-white);
   transform: scale(1.2);
 }
-
-/* ---------- Categorias ---------- */
 
 .categoriasHeader {
   padding: 32px clamp(24px, 5vw, 100px) 0;
@@ -264,8 +242,6 @@
   outline-offset: -3px;
 }
 
-/* ---------- Grade de resultados ---------- */
-
 .gradeWrapper {
   padding: 40px clamp(24px, 5vw, 100px) 0;
 }
@@ -299,11 +275,6 @@
   text-decoration: underline;
 }
 
-/* Grade fixa de "2 linhas de 5" — sobrescreve o auto-fill de
-   lista.module.css (que fica genérico pra outras telas que reusem
-   essa mesma classe) só aqui no catálogo. Com PAGE_SIZE = 10, 5
-   colunas formam exatamente 2 linhas. Em telas menores, reduz o
-   número de colunas pra não espremer os cards. */
 .gradeFixa {
   grid-template-columns: repeat(5, 1fr) !important;
 }
@@ -320,9 +291,6 @@
   }
 }
 
-/* Texto que fica direto no fundo claro da página (não em cima de um
-   card ou do banner escuro) — sobrescreve a cor branca que vem de
-   lista.module.css pra ficar legível. */
 .tituloEscuro {
   color: #1a1a1a !important;
 }
@@ -330,8 +298,6 @@
 .infoEscuro {
   color: #555555 !important;
 }
-
-/* ---------- Cards da grade (conteúdo específico do catálogo) ---------- */
 
 .cardConteudo {
   flex: 1;
@@ -342,9 +308,6 @@
   background-color: var(--color-red);
 }
 
-/* Sobrescreve só aqui a proporção de shared.capa (que é 3/4, pensada
-   pra biblioteca) pela proporção exata do wireframe pro card de jogo
-   do catálogo: 337x272. */
 .capaFixa {
   aspect-ratio: 337 / 272 !important;
 }

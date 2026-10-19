@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Detalhes de um jogo (/jogo/[id]) — RF004, RF005, RF006 e RF013.
+ *
+ * Mostra a ficha técnica vinda da RAWG, a nota do GameLog, o botão de
+ * adicionar/remover da biblioteca e as reviews dos outros usuários. O [id] da
+ * rota é o id do jogo na RAWG.
+ */
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,11 +15,14 @@ import { Modal } from "@/components/Modal";
 import { ReviewsJogo } from "@/components/ReviewsJogo";
 import { STATUS_LABEL } from "@/components/EntradaBibliotecaForm";
 import { useAuth } from "@/context/AuthContext";
-import { classindDoEsrb, descritoresDeTags } from "@/lib/classificacaoIndicativa";
+import {
+  classindDoEsrb,
+  descritoresDeTags,
+} from "@/lib/classificacaoIndicativa";
 import { traduzirGenero } from "@/lib/generos";
 import {
   addToLibrary,
-  ApiError,
+  mensagemErro,
   getGameDetailsRawg,
   getMinhaEntradaBiblioteca,
   getReviewsRawg,
@@ -20,10 +31,10 @@ import {
 } from "@/lib/api";
 import styles from "./page.module.css";
 
-// A RAWG não tem um campo pronto de "modo de jogo" — dá pra aproximar
-// olhando pras tags que ela já retorna em cada jogo. Só traduzo as
-// mais comuns; o resto das tags (gênero, tema etc.) a gente ignora
-// aqui, elas não servem pra essa linha específica da ficha técnica.
+/**
+ * A RAWG não tem um campo pronto de "modo de jogo", então ele é aproximado pelas
+ * tags mais comuns. As outras tags (gênero, tema...) não entram nessa linha.
+ */
 const MODOS_POR_TAG = {
   singleplayer: "Single Player (um jogador)",
   multiplayer: "Multiplayer",
@@ -33,6 +44,12 @@ const MODOS_POR_TAG = {
   "online-co-op": "Cooperativo online",
 };
 
+/**
+ * Converte uma data ISO (aaaa-mm-dd) para o formato brasileiro (dd/mm/aaaa).
+ *
+ * @param {string} [iso] Data em formato ISO.
+ * @returns {string|null} Data formatada, ou null se estiver vazia ou inválida.
+ */
 function formatarData(iso) {
   if (!iso) return null;
   const [ano, mes, dia] = iso.split("-");
@@ -40,17 +57,24 @@ function formatarData(iso) {
   return `${dia}/${mes}/${ano}`;
 }
 
+/**
+ * Pega o campo "name" de uma lista de objetos da RAWG, ignorando os vazios.
+ *
+ * @param {{name?: string}[]} [lista]
+ * @returns {string[]}
+ */
 function nomes(lista) {
   return (lista ?? []).map((item) => item?.name).filter(Boolean);
 }
 
-function mensagemErro(err, fallback) {
-  return err instanceof ApiError ? err.message : fallback;
-}
-
-// Estrelas cheias/vazias (0 a 5) a partir de uma média — usado tanto
-// pra nota do GameLog (convertida de 0-10 pra 0-5) quanto poderia
-// servir pra outras médias em estrela no futuro.
+/**
+ * Cinco estrelas (cheias ou vazias) a partir de uma média.
+ *
+ * @param {object} props
+ * @param {number} props.media Média de 0 a 5.
+ * @param {number} [props.tamanho=16] Tamanho de cada estrela, em pixels.
+ * @returns {JSX.Element}
+ */
 function Estrelas({ media, tamanho = 16 }) {
   const preenchidas = Math.round(Math.min(5, Math.max(0, media)));
   return (
@@ -72,8 +96,14 @@ function Estrelas({ media, tamanho = 16 }) {
   );
 }
 
-// Ícone de bookmark (mesma silhueta do "salvar" do Instagram):
-// contorno quando ainda não está salvo, preenchido quando já está.
+/**
+ * Ícone de marcador: só o contorno quando o jogo ainda não está salvo, e
+ * preenchido quando já está.
+ *
+ * @param {object} props
+ * @param {boolean} props.preenchido
+ * @returns {JSX.Element}
+ */
 function IconeBookmark({ preenchido }) {
   return (
     <svg
@@ -93,9 +123,12 @@ function IconeBookmark({ preenchido }) {
   );
 }
 
-// Seta grossa e centralizada pro botão de voltar — trocada pelo
-// caractere "←" porque o glifo variava de alinhamento entre fontes e
-// ficava torto dentro do círculo.
+/**
+ * Seta do botão de voltar. É um SVG porque o caractere "←" ficava torto dentro do
+ * círculo, dependendo da fonte.
+ *
+ * @returns {JSX.Element}
+ */
 function IconeVoltar() {
   return (
     <svg
@@ -115,13 +148,18 @@ function IconeVoltar() {
   );
 }
 
+/**
+ * Página de detalhes do jogo. É uma rota protegida: sem sessão, redireciona para
+ * o login.
+ *
+ * @returns {JSX.Element|null}
+ */
 export default function DetalhesJogoPage() {
   const { id } = useParams();
   const { token, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Rota protegida: manda pro login se não tiver sessão (mesmo padrão
-  // já usado em app/biblioteca/page.jsx e app/catalogo/page.jsx).
+  // Rota protegida: sem sessão, manda o usuário para o login.
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
@@ -132,24 +170,21 @@ export default function DetalhesJogoPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ---------- Biblioteca (se o jogo já estiver, guarda a entrada aqui;
-  // se não estiver, fica null e mostramos o botão "Adicionar") ----------
+  // Se o jogo já está na biblioteca, guarda a entrada; se não está, fica null e a
+  // página mostra o botão de adicionar.
   const [entradaBiblioteca, setEntradaBiblioteca] = useState(null);
   const [carregandoEntrada, setCarregandoEntrada] = useState(true);
   const [removendo, setRemovendo] = useState(false);
 
-  // Pop-up que abre ao clicar em "Adicionar à Biblioteca", só pra
-  // escolher o status inicial. Edição de nota/review/horas depois
-  // disso acontece só na Biblioteca — aqui é só o momento de adicionar.
+  // Modal de "Adicionar à Biblioteca": pede só o status inicial. Nota e review são
+  // editadas depois, na Biblioteca.
   const [modalAberto, setModalAberto] = useState(false);
   const [statusEscolhido, setStatusEscolhido] = useState("planejado");
   const [adicionando, setAdicionando] = useState(false);
   const [erroBiblioteca, setErroBiblioteca] = useState(null);
 
-  // ---------- Reviews (RF013) — carregadas aqui, uma única vez, porque
-  // tanto a nota do GameLog (estrelas ao lado da imagem) quanto a
-  // lista completa (componente ReviewsJogo, mais abaixo na página)
-  // precisam dos mesmos dados. ----------
+  // As reviews são carregadas aqui, uma vez só, porque a nota do GameLog e a lista
+  // (ReviewsJogo) usam os mesmos dados.
   const [reviews, setReviews] = useState([]);
   const [carregandoReviews, setCarregandoReviews] = useState(true);
   const [erroReviews, setErroReviews] = useState(null);
@@ -166,7 +201,8 @@ export default function DetalhesJogoPage() {
         const dados = await getGameDetailsRawg(id);
         if (!cancelado) setJogo(dados);
       } catch (err) {
-        if (!cancelado) setError(mensagemErro(err, "Não foi possível carregar esse jogo."));
+        if (!cancelado)
+          setError(mensagemErro(err, "Não foi possível carregar esse jogo."));
       } finally {
         if (!cancelado) setLoading(false);
       }
@@ -193,9 +229,8 @@ export default function DetalhesJogoPage() {
         const entrada = await getMinhaEntradaBiblioteca(token, id);
         if (!cancelado) setEntradaBiblioteca(entrada);
       } catch {
-        // se der erro aqui, não é grave o suficiente pra travar a página
-        // inteira — só assume que não está na biblioteca e mostra o
-        // botão de adicionar normalmente.
+        // Falhar aqui não deve travar a página: assume que o jogo não está na
+        // biblioteca e mostra o botão de adicionar.
         if (!cancelado) setEntradaBiblioteca(null);
       } finally {
         if (!cancelado) setCarregandoEntrada(false);
@@ -221,7 +256,9 @@ export default function DetalhesJogoPage() {
         if (!cancelado) setReviews(data ?? []);
       } catch (err) {
         if (!cancelado) {
-          setErroReviews(mensagemErro(err, "Não foi possível carregar as reviews."));
+          setErroReviews(
+            mensagemErro(err, "Não foi possível carregar as reviews."),
+          );
         }
       } finally {
         if (!cancelado) setCarregandoReviews(false);
@@ -250,9 +287,10 @@ export default function DetalhesJogoPage() {
     setErroBiblioteca(null);
 
     try {
-      // 1) garante que o jogo exista em tb_jogos (importa se preciso)
+      // 1) Garante que o jogo exista no banco local (importa se for preciso).
       const jogoLocal = await importarUmJogoRawg(token, id);
-      // 2) só então adiciona na biblioteca do usuário, com o id local
+
+      // 2) Só então adiciona à biblioteca, usando o id local.
       const novaEntrada = await addToLibrary(token, {
         bib_status: statusEscolhido,
         bib_jgs_id: jogoLocal.jgs_id,
@@ -260,14 +298,14 @@ export default function DetalhesJogoPage() {
       setEntradaBiblioteca(novaEntrada);
       setModalAberto(false);
     } catch (err) {
-      setErroBiblioteca(mensagemErro(err, "Não foi possível adicionar à biblioteca."));
+      setErroBiblioteca(
+        mensagemErro(err, "Não foi possível adicionar à biblioteca."),
+      );
     } finally {
       setAdicionando(false);
     }
   }
 
-  // Remover direto da página de detalhes (clicando no mesmo botão que
-  // virou "Remover da Biblioteca") — sem precisar ir até a Biblioteca.
   async function handleRemover() {
     if (!entradaBiblioteca) return;
     setRemovendo(true);
@@ -277,7 +315,9 @@ export default function DetalhesJogoPage() {
       await removeFromLibrary(token, entradaBiblioteca.bib_id);
       setEntradaBiblioteca(null);
     } catch (err) {
-      setErroBiblioteca(mensagemErro(err, "Não foi possível remover da biblioteca."));
+      setErroBiblioteca(
+        mensagemErro(err, "Não foi possível remover da biblioteca."),
+      );
     } finally {
       setRemovendo(false);
     }
@@ -293,13 +333,12 @@ export default function DetalhesJogoPage() {
     .filter(Boolean)
     .filter((valor, i, arr) => arr.indexOf(valor) === i);
 
-  // ---------- Classificação indicativa (modelo brasileiro, não o ESRB
-  // americano que a RAWG devolve cru) ----------
+  // Classificação indicativa no modelo brasileiro (a RAWG só devolve o ESRB).
   const classind = classindDoEsrb(jogo?.esrb_rating);
   const descritores = descritoresDeTags(jogo?.tags);
 
-  // ---------- Nota do GameLog: média das notas (0-10) das reviews dos
-  // próprios usuários, convertida pra 0-5 estrelas ----------
+  // Nota do GameLog: média das notas (0 a 10) das reviews dos usuários, convertida
+  // para 0 a 5 estrelas.
   const notasValidas = reviews
     .map((r) => r.bib_usr_nota)
     .filter((nota) => nota != null);
@@ -318,7 +357,11 @@ export default function DetalhesJogoPage() {
       <Header active="catalogo" />
 
       <div className={styles.conteudo}>
-        <button type="button" className={styles.voltar} onClick={() => router.back()}>
+        <button
+          type="button"
+          className={styles.voltar}
+          onClick={() => router.back()}
+        >
           <span aria-hidden="true">
             <IconeVoltar />
           </span>
@@ -332,7 +375,6 @@ export default function DetalhesJogoPage() {
           <>
             <div className={styles.grade}>
               <div className={styles.colunaImagem}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   className={styles.capa}
                   src={jogo.background_image || "/images/placeholder.svg"}
@@ -344,12 +386,17 @@ export default function DetalhesJogoPage() {
                     <div className={styles.classificacao}>
                       <span
                         className={styles.classificacaoNumero}
-                        style={{ backgroundColor: classind.cor, color: classind.corTexto }}
+                        style={{
+                          backgroundColor: classind.cor,
+                          color: classind.corTexto,
+                        }}
                       >
                         {classind.chave}
                       </span>
                       <span className={styles.classificacaoTextos}>
-                        <span className={styles.classificacaoRotulo}>{classind.rotulo}</span>
+                        <span className={styles.classificacaoRotulo}>
+                          {classind.rotulo}
+                        </span>
                         {descritores.length > 0 && (
                           <span className={styles.classificacaoDescritores}>
                             {descritores.join(", ")}
@@ -359,9 +406,6 @@ export default function DetalhesJogoPage() {
                     </div>
                   )}
 
-                  {/* Nota do GameLog (média das reviews dos usuários,
-                     0-10 convertida pra 0-5 estrelas), sempre no canto
-                     oposto ao selo de classificação. */}
                   <div className={styles.avaliacaoGameLog}>
                     {mediaGameLog5 != null ? (
                       <>
@@ -371,12 +415,16 @@ export default function DetalhesJogoPage() {
                         </span>
                         <span className={styles.numAvaliacoes}>
                           {notasValidas.length}{" "}
-                          {notasValidas.length === 1 ? "avaliação" : "avaliações"}
+                          {notasValidas.length === 1
+                            ? "avaliação"
+                            : "avaliações"}
                         </span>
                       </>
                     ) : (
                       !carregandoReviews && (
-                        <span className={styles.semAvaliacoes}>Ainda sem avaliações</span>
+                        <span className={styles.semAvaliacoes}>
+                          Ainda sem avaliações
+                        </span>
                       )
                     )}
                   </div>
@@ -438,9 +486,6 @@ export default function DetalhesJogoPage() {
                   </>
                 )}
 
-                {/* Nota da RAWG (0-5, escala própria dela) — visual
-                   totalmente diferente da nota do GameLog acima, pra não
-                   dar a entender que são a mesma coisa. */}
                 {jogo.rating > 0 && (
                   <div className={styles.notaRawg}>
                     <span className={styles.notaRawgFonte}>RAWG</span>
@@ -471,7 +516,9 @@ export default function DetalhesJogoPage() {
                         {removendo ? "Removendo..." : "Remover da Biblioteca"}
                       </button>
                       {erroBiblioteca && (
-                        <p className={styles.erroBiblioteca}>{erroBiblioteca}</p>
+                        <p className={styles.erroBiblioteca}>
+                          {erroBiblioteca}
+                        </p>
                       )}
                     </>
                   ) : (
@@ -485,7 +532,9 @@ export default function DetalhesJogoPage() {
                         Adicionar à Biblioteca
                       </button>
                       {erroBiblioteca && (
-                        <p className={styles.erroBiblioteca}>{erroBiblioteca}</p>
+                        <p className={styles.erroBiblioteca}>
+                          {erroBiblioteca}
+                        </p>
                       )}
                     </>
                   )}
@@ -497,14 +546,24 @@ export default function DetalhesJogoPage() {
               <div className={styles.sinopse}>{jogo.description_raw}</div>
             )}
 
-            <ReviewsJogo reviews={reviews} loading={carregandoReviews} erro={erroReviews} />
+            <ReviewsJogo
+              reviews={reviews}
+              loading={carregandoReviews}
+              erro={erroReviews}
+            />
           </>
         )}
       </div>
 
       {modalAberto && (
-        <Modal titulo="Adicionar à Biblioteca" onFechar={() => setModalAberto(false)}>
-          <form className={styles.formAdicionar} onSubmit={handleConfirmarAdicionar}>
+        <Modal
+          titulo="Adicionar à Biblioteca"
+          onFechar={() => setModalAberto(false)}
+        >
+          <form
+            className={styles.formAdicionar}
+            onSubmit={handleConfirmarAdicionar}
+          >
             <label className={styles.labelAdicionar}>
               Status
               <select
@@ -520,7 +579,9 @@ export default function DetalhesJogoPage() {
               </select>
             </label>
 
-            {erroBiblioteca && <p className={styles.erroBiblioteca}>{erroBiblioteca}</p>}
+            {erroBiblioteca && (
+              <p className={styles.erroBiblioteca}>{erroBiblioteca}</p>
+            )}
 
             <button
               type="submit"

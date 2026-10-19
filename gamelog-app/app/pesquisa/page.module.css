@@ -2,7 +2,11 @@
   --color-bg-top: #ededed;
   --color-bg-bottom: #adacac;
   min-height: 100vh;
-  background: linear-gradient(180deg, var(--color-bg-top) 0%, var(--color-bg-bottom) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--color-bg-top) 0%,
+    var(--color-bg-bottom) 100%
+  );
   color: #000000;
   padding-bottom: 80px;
 }
@@ -11,8 +15,6 @@
   width: min(1400px, calc(100% - 64px));
   margin: 0 auto;
 }
-
-/* ---------- Busca ---------- */
 
 .buscaWrapper {
   display: flex;
@@ -62,8 +64,6 @@
   pointer-events: none;
 }
 
-/* ---------- Layout: sidebar + resultados ---------- */
-
 .layout {
   display: grid;
   grid-template-columns: 190px minmax(0, 1fr);
@@ -102,9 +102,7 @@
   gap: 8px;
   min-height: 26px;
   padding: 5px 0 5px 26px;
-  /* No protótipo, o texto das opções (Ação, Aventura...) é preto,
-     igual ao cabeçalho da categoria — só o cabeçalho geral da página
-     ("Perfil" etc.) usa o vermelho vivo da marca. */
+
   color: #1a1a1a;
   font-family: "Public Sans", Arial, sans-serif;
   font-size: 13px;
@@ -140,7 +138,10 @@
   border: 0;
   background: transparent;
   color: #921013;
-  font: 700 13px "Public Sans", Arial, sans-serif;
+  font:
+    700 13px "Public Sans",
+    Arial,
+    sans-serif;
   cursor: pointer;
 }
 

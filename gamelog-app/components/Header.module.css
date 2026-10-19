@@ -75,9 +75,7 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  /* Antes era igual à cor de fundo do header (#570d0d), o que deixava
-     o ícone invisível — agora usa um tom claro pra aparecer de verdade
-     em cima do vermelho escuro. */
+
   color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
 }

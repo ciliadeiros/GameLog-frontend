@@ -23,11 +23,6 @@
   box-sizing: border-box;
 }
 
-
-/* =========================
-   FUNDO
-   ========================= */
-
 .img-game-catalog {
   position: absolute;
   inset: 0;
@@ -43,11 +38,6 @@
   opacity: 0.5;
 }
 
-
-/* =========================
-   ESCURECIMENTO
-   ========================= */
-
 .cadastro-de-usu::after {
   content: "";
 
@@ -61,11 +51,6 @@
   pointer-events: none;
 }
 
-
-/* =========================
-   LOGO
-   ========================= */
-
 .logo-instance {
   position: absolute;
 
@@ -77,11 +62,6 @@
   width: 210px;
   height: auto;
 }
-
-
-/* =========================
-   FORMULÁRIO
-   ========================= */
 
 .cadastro-form {
   position: relative;
@@ -97,11 +77,6 @@
   flex-direction: column;
 }
 
-
-/* =========================
-   TÍTULO
-   ========================= */
-
 .cadastro-titulo {
   margin: 0 0 28px;
 
@@ -116,11 +91,6 @@
   text-align: center;
 }
 
-
-/* =========================
-   GRUPO
-   ========================= */
-
 .form-group {
   display: flex;
   flex-direction: column;
@@ -133,11 +103,6 @@
 .form-group:first-of-type {
   margin-top: 0;
 }
-
-
-/* =========================
-   LABEL
-   ========================= */
 
 .form-label {
   display: block;
@@ -152,11 +117,6 @@
 
   line-height: 1.2;
 }
-
-
-/* =========================
-   CAMPO
-   ========================= */
 
 .field-wrapper {
   display: flex;
@@ -194,11 +154,6 @@
   font-style: italic;
 }
 
-
-/* =========================
-   ERRO
-   ========================= */
-
 .erro {
   margin: 16px 0 0;
 
@@ -209,11 +164,6 @@
 
   text-align: center;
 }
-
-
-/* =========================
-   BOTÃO
-   ========================= */
 
 .botao-cadastrar {
   width: 238px;
@@ -249,11 +199,6 @@
   cursor: not-allowed;
 }
 
-
-/* =========================
-   LINK
-   ========================= */
-
 .link {
   display: block;
 
@@ -274,11 +219,6 @@
 .link:hover {
   text-decoration: underline;
 }
-
-
-/* =========================
-   RESPONSIVO
-   ========================= */
 
 @media (max-width: 720px) {
   .cadastro-de-usu {

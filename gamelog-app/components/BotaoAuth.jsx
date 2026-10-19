@@ -1,16 +1,24 @@
+/**
+ * @fileoverview Botão usado nas telas de autenticação (login, cadastro e página
+ * inicial).
+ */
+
 import Link from "next/link";
 import styles from "./BotaoAuth.module.css";
 
 /**
- * Botão de autenticação reutilizável (login/cadastro), usado nas telas
- * "cad" e "pagina-inicial". Também não veio no zip exportado do Figma.
+ * Botão reutilizável. Com `href` vira um link de navegação; sem `href` vira um
+ * <button> comum (ou de envio, quando usado dentro de formulários).
  *
- * - text: texto do botão
- * - href: se passado, renderiza como <Link> (navegação)
- * - type: se "submit", renderiza como <button type="submit"> (útil dentro de forms)
- * - onClick: handler opcional
- * - className / divClassName: mantidos para bater com os nomes que o
- *   Figma já gerava (className no wrapper, divClassName no texto interno)
+ * @param {object} props
+ * @param {string} [props.text="ENTRAR"] Texto do botão.
+ * @param {string} [props.href] Se informado, o botão é renderizado como <Link>.
+ * @param {"button"|"submit"} [props.type="button"] Tipo do <button>.
+ * @param {Function} [props.onClick] Função chamada ao clicar.
+ * @param {boolean} [props.disabled=false] Desabilita o botão.
+ * @param {string} [props.className] Classe extra do botão.
+ * @param {string} [props.divClassName] Classe extra do texto interno.
+ * @returns {JSX.Element}
  */
 export function BotaoAuth({
   text = "ENTRAR",
@@ -21,7 +29,9 @@ export function BotaoAuth({
   className = "",
   divClassName = "",
 }) {
-  const content = <span className={`${styles.texto} ${divClassName}`}>{text}</span>;
+  const content = (
+    <span className={`${styles.texto} ${divClassName}`}>{text}</span>
+  );
 
   if (href) {
     return (
