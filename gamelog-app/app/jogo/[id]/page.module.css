@@ -1,6 +1,5 @@
 .pagina {
-  --color-bg: linear-gradient(180deg, #ededed 0%, #adacac 100%);
-
+  --color-bg: #ededed;
   min-height: 100vh;
   background: var(--color-bg);
   padding-bottom: 100px;

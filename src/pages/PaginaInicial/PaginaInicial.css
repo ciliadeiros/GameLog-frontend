@@ -17,22 +17,11 @@
   inset: 0;
   z-index: 0;
   height: 840px;
-  background: radial-gradient(
-    circle at 30% 20%,
-    var(--glog-dark-red) 0%,
-    var(--glog-near-black) 55%,
-    var(--glog-black) 100%
-  );
+  background: var(--glog-black);
 }
 
 .pagina-inicial__gradiente {
-  position: absolute;
-  top: 112px;
-  left: 0;
-  width: 100%;
-  height: 988px;
-  z-index: 1;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
+  display: none;
 }
 
 .pagina-inicial__logo {
