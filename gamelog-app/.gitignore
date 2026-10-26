@@ -44,3 +44,6 @@ next-env.d.ts
 # arquivos que o "next dev" gera sozinho pra ferramentas de IA (ex.: Claude Code)
 AGENTS.md
 CLAUDE.md
+
+# Relatorios locais do Vitest
+.vitest/
