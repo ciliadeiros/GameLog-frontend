@@ -8,7 +8,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { getMe, loginUser, registerUser } from "@/lib/api";
+import { getMe, loginUser, registerUser, updateMe } from "@/lib/api";
 
 /** Contexto interno. Quem consome usa o hook useAuth. */
 const AuthContext = createContext(null);
@@ -30,6 +30,8 @@ const TOKEN_KEY = "gamelog_token";
  * - register(dados): cadastra e já faz login em seguida (o back-end não loga
  * sozinho depois do cadastro).
  * - logout(): apaga o token e limpa o usuário.
+ * - atualizarPerfil(dados): salva alterações do perfil (PATCH /auth/me) e já
+ * atualiza o usuário guardado aqui, então o resto do app vê o dado novo.
  *
  * @param {object} props
  * @param {React.ReactNode} props.children
@@ -73,6 +75,12 @@ export function AuthProvider({ children }) {
     return login({ email: dados.email, senha: dados.senha });
   }
 
+  async function atualizarPerfil(dados) {
+    const atualizado = await updateMe(token, dados);
+    setUser(atualizado);
+    return atualizado;
+  }
+
   function logout() {
     window.localStorage.removeItem(TOKEN_KEY);
     setToken(null);
@@ -81,7 +89,15 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ token, user, loading, login, register, logout }}
+      value={{
+        token,
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        atualizarPerfil,
+      }}
     >
       {children}
     </AuthContext.Provider>
@@ -92,7 +108,8 @@ export function AuthProvider({ children }) {
  * Acessa a sessão atual. Só funciona dentro de um <AuthProvider>.
  *
  * @returns {{token: (string|null), user: (object|null), loading: boolean,
- * login: Function, register: Function, logout: Function}}
+ * login: Function, register: Function, logout: Function,
+ * atualizarPerfil: Function}}
  * @throws {Error} Se for usado fora do <AuthProvider>.
  */
 export function useAuth() {

@@ -34,6 +34,44 @@ export function mensagemErro(err, fallback) {
   return err instanceof ApiError ? err.message : fallback;
 }
 
+/** Nome de cada campo do back-end como aparece nas mensagens de erro de validação. */
+const NOMES_DOS_CAMPOS = {
+  usr_nome_usuario: "nome de usuário",
+  usr_nome_completo: "nome completo",
+  usr_email: "e-mail",
+  usr_senha: "senha",
+  usr_senha_atual: "senha atual",
+  usr_senha_nova: "nova senha",
+};
+
+/**
+ * Transforma o campo "detail" de um erro do FastAPI em texto para a tela.
+ *
+ * Erros de regra de negócio vêm como texto (ex.: "Email já cadastrado") e passam
+ * direto. Já os erros de validação (status 422) vêm como uma lista, e a primeira
+ * falha é traduzida (ex.: "A senha deve ter pelo menos 8 caracteres.").
+ *
+ * @param {*} detail Conteúdo do campo "detail" da resposta.
+ * @returns {string} Mensagem pronta para mostrar ao usuário.
+ */
+export function mensagemDoDetail(detail) {
+  if (typeof detail === "string") return detail;
+
+  const falha = Array.isArray(detail) ? detail[0] : null;
+  if (!falha) return "Erro na requisição";
+
+  const campo = NOMES_DOS_CAMPOS[falha.loc?.[falha.loc.length - 1]];
+  if (!campo) return "Dados inválidos. Confira os campos e tente novamente.";
+
+  if (falha.type === "string_too_short") {
+    return `O campo ${campo} deve ter pelo menos ${falha.ctx?.min_length} caracteres.`;
+  }
+  if (falha.type === "string_too_long") {
+    return `O campo ${campo} deve ter no máximo ${falha.ctx?.max_length} caracteres.`;
+  }
+  return `O campo ${campo} é inválido.`;
+}
+
 /**
  * Faz a requisição ao back-end e devolve o JSON da resposta.
  *
@@ -70,11 +108,7 @@ async function request(
 
   if (!res.ok) {
     const detail = data?.detail || res.statusText;
-    throw new ApiError(
-      typeof detail === "string" ? detail : "Erro na requisição",
-      res.status,
-      detail,
-    );
+    throw new ApiError(mensagemDoDetail(detail), res.status, detail);
   }
 
   return data;
@@ -133,6 +167,37 @@ export function loginUser({ email, senha }) {
  */
 export function getMe(token) {
   return request("/auth/me", { token });
+}
+
+/**
+ * Atualiza o perfil do usuário logado (PATCH /auth/me). Só os campos enviados
+ * são alterados.
+ *
+ * @param {string} token Token JWT.
+ * @param {object} dados Campos do perfil (usr_nome_completo, usr_nome_usuario,
+ * usr_email, usr_avatar_url ou usr_bio). Mandar usr_avatar_url como null remove a foto.
+ * @returns {Promise<object>} Usuário já atualizado.
+ */
+export function updateMe(token, dados) {
+  return request("/auth/me", { method: "PATCH", body: dados, token });
+}
+
+/**
+ * Troca a senha do usuário logado (PATCH /auth/me/senha). O back-end confere a
+ * senha atual e responde 204 (sem corpo) quando dá certo.
+ *
+ * @param {string} token Token JWT.
+ * @param {object} dados
+ * @param {string} dados.senhaAtual
+ * @param {string} dados.novaSenha
+ * @returns {Promise<null>}
+ */
+export function changePassword(token, { senhaAtual, novaSenha }) {
+  return request("/auth/me/senha", {
+    method: "PATCH",
+    token,
+    body: { usr_senha_atual: senhaAtual, usr_senha_nova: novaSenha },
+  });
 }
 
 /** Lista os jogos que já estão salvos no banco do GameLog (GET /games/). */

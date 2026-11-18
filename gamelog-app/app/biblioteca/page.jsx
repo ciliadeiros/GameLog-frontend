@@ -198,9 +198,9 @@ export default function BibliotecaPage() {
       }
 
       if (classificacoes.size > 0) {
-        if (!jogo?.jgs_classificacao_indicativa) return false;
-        if (!classificacoes.has(jogo.jgs_classificacao_indicativa))
-          return false;
+        // Jogo sem classificação conta como "+18".
+        const classind = jogo?.jgs_classificacao_indicativa ?? "+18";
+        if (!classificacoes.has(classind)) return false;
       }
 
       if (tempoJogo.size > 0) {

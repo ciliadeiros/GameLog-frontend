@@ -1,0 +1,138 @@
+/*
+ * Estilos da página /perfil. O que é comum às duas telas de perfil (fundo,
+ * cartões, botões e mensagens) fica em app/styles/perfil.module.css.
+ */
+
+.conteudo {
+  display: grid;
+  grid-template-columns: minmax(280px, 436px) 1fr;
+  gap: 42px;
+  align-items: start;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 32px clamp(24px, 3vw, 45px) 0;
+}
+
+.lateral {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 56px 38px 40px;
+}
+
+.avatar {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 18px;
+}
+
+.nome {
+  color: #000000;
+  font-family: var(--font-base);
+  font-size: 28px;
+  font-weight: 500;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.usuario {
+  margin-bottom: 22px;
+  color: #6b6b6b;
+  font-family: var(--font-base);
+  font-size: 22px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.trocarFoto {
+  height: 45px;
+  border: 1px solid #a8a8a8;
+  border-radius: 3px;
+  background: #dedede;
+  color: #1a1a1a;
+  font-family: var(--font-base);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.trocarFoto:hover {
+  background: #cfcfcf;
+}
+
+.estatisticas {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #666666;
+}
+
+.linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  color: #000000;
+  font-family: var(--font-base);
+  font-size: 16px;
+}
+
+.sair {
+  margin-top: 28px;
+  height: 40px;
+  border: 1px solid #8f0f12;
+  border-radius: 3px;
+  background: transparent;
+  color: #8f0f12;
+  font-family: var(--font-base);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sair:hover {
+  background: #8f0f12;
+  color: #ffffff;
+}
+
+/* Formulário do modal "Trocar foto". */
+
+.formFoto {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formFotoRotulo {
+  color: #1a1a1a;
+  font-family: var(--font-base);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.formFotoCampo {
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #8f8f8f;
+  border-radius: 3px;
+  background: #ededed;
+  color: #1a1a1a;
+  font-family: var(--font-base);
+  font-size: 15px;
+}
+
+.formFotoAcoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .conteudo {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .lateral {
+    padding: 40px 24px 32px;
+  }
+}

@@ -52,6 +52,7 @@ const OPCOES_AVALIACAO = [1, 2, 3, 4, 5];
 /**
  * Converte o ESRB da RAWG para a classificação indicativa brasileira (aproximação,
  * a mesma do back-end). Fica aqui porque a pesquisa usa os dados crus da RAWG.
+ * Jogo sem ESRB conhecido conta como "+18".
  */
 const ESRB_PARA_CLASSIND = {
   Everyone: "Livre",
@@ -268,8 +269,8 @@ function PesquisaConteudo() {
       }
 
       if (classificacoes.size > 0) {
-        const classind = ESRB_PARA_CLASSIND[jogo.esrb_rating?.name];
-        if (!classind || !classificacoes.has(classind)) return false;
+        const classind = ESRB_PARA_CLASSIND[jogo.esrb_rating?.name] ?? "+18";
+        if (!classificacoes.has(classind)) return false;
       }
 
       return true;

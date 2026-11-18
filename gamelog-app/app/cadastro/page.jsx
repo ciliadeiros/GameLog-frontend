@@ -143,7 +143,8 @@ export default function CadastroPage() {
               value={form.senha}
               onChange={handleChange("senha")}
               required
-              minLength={6}
+              minLength={8}
+              maxLength={72}
             />
           </div>
         </div>

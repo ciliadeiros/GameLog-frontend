@@ -1,0 +1,48 @@
+/*
+ * Estilos do componente `CampoPerfil` (rótulo + campo cinza do protótipo).
+ */
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rotulo {
+  color: #000000;
+  font-family: var(--font-base);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.campo {
+  width: 100%;
+  height: 58px;
+  padding: 0 14px;
+  border: 1px solid #8f8f8f;
+  border-radius: 3px;
+  background: #d0d0d0;
+  color: #1a1a1a;
+  font-family: var(--font-base);
+  font-size: 18px;
+}
+
+.campo:focus-visible {
+  border-color: var(--color-red);
+  outline: 2px solid var(--color-red);
+  outline-offset: 0;
+}
+
+/* Campo só de leitura: não parece "ativo" nem mostra destaque de foco. */
+.campo[readonly] {
+  cursor: default;
+}
+
+.campo[readonly]:focus-visible {
+  border-color: #8f8f8f;
+  outline: none;
+}
+
+.campo::placeholder {
+  color: #5c5c5c;
+}

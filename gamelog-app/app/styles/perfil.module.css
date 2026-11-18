@@ -1,0 +1,105 @@
+/*
+ * Estilos compartilhados pelas telas de perfil: /perfil e /perfil/editar.
+ * Fundo cinza em degradê, cartões brancos e botões vermelhos do protótipo.
+ */
+
+.pagina {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e8e8e8 0%, #d2d2d2 100%);
+  padding-bottom: 80px;
+}
+
+.cartao {
+  padding: 40px clamp(24px, 5vw, 74px);
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.titulo {
+  padding-bottom: 14px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid #666666;
+  color: #000000;
+  font-family: var(--font-base);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.botao,
+.botaoSecundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 40px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-family: var(--font-base);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.botao {
+  background: #8f0f12;
+  color: #ffffff;
+}
+
+.botao:hover {
+  background: var(--color-red-hover);
+}
+
+.botaoSecundario {
+  border-color: #a8a8a8;
+  background: #dedede;
+  color: #1a1a1a;
+}
+
+.botaoSecundario:hover {
+  background: #cfcfcf;
+}
+
+.botao:disabled,
+.botaoSecundario:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.erro,
+.sucesso {
+  margin-top: 14px;
+  font-family: var(--font-base);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.erro {
+  color: #b00000;
+}
+
+.sucesso {
+  color: #1f7a3d;
+}
+
+.info {
+  padding: 40px 0;
+  color: #4a4a4a;
+  font-family: var(--font-base);
+  font-size: 15px;
+  text-align: center;
+}

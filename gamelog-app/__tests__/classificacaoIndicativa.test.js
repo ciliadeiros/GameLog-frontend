@@ -19,10 +19,11 @@ describe("Classificação indicativa de jogos (RAWG → Brasil)", () => {
     });
   });
 
-  it("não inventa classificação se ela está ausente ou desconhecida", () => {
-    expect(classindDoEsrb(null)).toBeNull();
-    expect(classindDoEsrb(undefined)).toBeNull();
-    expect(classindDoEsrb({ name: "Unknown" })).toBeNull();
+  it("trata jogo sem classificação (ausente ou desconhecida) como 18 anos", () => {
+    const esperado = { chave: "18", ...CLASSIND_INFO[18] };
+    expect(classindDoEsrb(null)).toEqual(esperado);
+    expect(classindDoEsrb(undefined)).toEqual(esperado);
+    expect(classindDoEsrb({ name: "Rating Pending" })).toEqual(esperado);
   });
 
   it("traduz tags em descritores sem duplicações e respeitando a ordem", () => {

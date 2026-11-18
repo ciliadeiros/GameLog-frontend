@@ -1,0 +1,57 @@
+/*
+ * Estilos da página /perfil/editar. O que é comum às duas telas de perfil
+ * (fundo, cartões, botões e mensagens) fica em app/styles/perfil.module.css.
+ */
+
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+  max-width: 1085px;
+  margin: 0 auto;
+  padding: 44px clamp(16px, 3vw, 24px) 0;
+}
+
+.caminho {
+  color: #000000;
+  font-family: var(--font-base);
+  font-size: 26px;
+}
+
+.caminhoLink:hover {
+  text-decoration: underline;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.nota {
+  margin: -10px 0 22px;
+  color: #4a4a4a;
+  font-family: var(--font-base);
+  font-size: 17px;
+  font-style: italic;
+}
+
+.requisito {
+  margin-top: 26px;
+  color: #c00000;
+  font-family: var(--font-base);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.requisito::before {
+  content: "•";
+  margin: 0 12px 0 10px;
+}
+
+.acoesPagina {
+  display: flex;
+  justify-content: flex-end;
+  gap: 26px;
+  margin-top: -10px;
+}

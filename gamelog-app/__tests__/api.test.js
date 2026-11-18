@@ -158,7 +158,11 @@ describe("Cliente da API GameLog", () => {
 
   it("propaga a mensagem do FastAPI quando ocorre erro HTTP", async () => {
     fetch.mockResolvedValueOnce(
-      resposta({ status: 401, statusText: "Unauthorized", data: { detail: "Credenciais inválidas" } }),
+      resposta({
+        status: 401,
+        statusText: "Unauthorized",
+        data: { detail: "Credenciais inválidas" },
+      }),
     );
     await expect(getMe("invalido")).rejects.toMatchObject({
       name: "Error",
@@ -168,13 +172,13 @@ describe("Cliente da API GameLog", () => {
     });
   });
 
-  it("oferece mensagem genérica quando o detail não é texto", async () => {
+  it("oferece mensagem genérica quando o detail é uma lista que não dá para traduzir", async () => {
     fetch.mockResolvedValueOnce(
       resposta({ status: 422, data: { detail: [{ msg: "erro" }] } }),
     );
     await expect(registerUser({})).rejects.toMatchObject({
       status: 422,
-      message: "Erro na requisição",
+      message: "Dados inválidos. Confira os campos e tente novamente.",
     });
   });
 

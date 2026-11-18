@@ -334,7 +334,7 @@ export default function DetalhesJogoPage() {
     .filter((valor, i, arr) => arr.indexOf(valor) === i);
 
   // Classificação indicativa no modelo brasileiro (a RAWG só devolve o ESRB).
-  const classind = classindDoEsrb(jogo?.esrb_rating);
+  const classind = jogo ? classindDoEsrb(jogo.esrb_rating) : null;
   const descritores = descritoresDeTags(jogo?.tags);
 
   // Nota do GameLog: média das notas (0 a 10) das reviews dos usuários, convertida

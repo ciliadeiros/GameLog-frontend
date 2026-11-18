@@ -3,7 +3,8 @@
  * classificação indicativa brasileira (ClassInd).
  *
  * Serve só para exibir o selo na página de detalhes do jogo. A conversão é
- * aproximada: ESRB e ClassInd usam critérios diferentes.
+ * aproximada: ESRB e ClassInd usam critérios diferentes. Jogo sem ESRB (ou com
+ * um ESRB desconhecido, como "Rating Pending") é tratado como 18 anos.
  */
 
 /**
@@ -54,12 +55,11 @@ const DESCRITOR_POR_TAG = {
  * Converte o esrb_rating cru da RAWG no selo de classificação indicativa.
  *
  * @param {{name: string}|null|undefined} esrbRating Campo esrb_rating do jogo.
- * @returns {{chave: string, rotulo: string, cor: string, corTexto: string}|null}
- * Dados prontos para o selo, ou null se a RAWG não informou ESRB.
+ * @returns {{chave: string, rotulo: string, cor: string, corTexto: string}}
+ * Dados prontos para o selo. Sem ESRB conhecido, devolve o selo de 18 anos.
  */
 export function classindDoEsrb(esrbRating) {
-  const chave = ESRB_PARA_CLASSIND[esrbRating?.name];
-  if (!chave) return null;
+  const chave = ESRB_PARA_CLASSIND[esrbRating?.name] ?? "18";
   return { chave, ...CLASSIND_INFO[chave] };
 }
 

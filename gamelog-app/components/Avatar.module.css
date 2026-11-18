@@ -1,0 +1,24 @@
+/*
+ * Estilos do componente `Avatar`. O tamanho é definido por quem usa o
+ * componente (via className).
+ */
+
+.avatar {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #b00a0a;
+  color: #ffffff;
+}
+
+.foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.estrela {
+  width: 46%;
+  height: 46%;
+}
